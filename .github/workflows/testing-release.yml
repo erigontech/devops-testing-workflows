@@ -45,20 +45,26 @@ jobs:
             goarch: amd64
             flags_cc: x86_64-linux-gnu-gcc
             flags_cxx: x86_64-linux-gnu-g++
-            build_dst: build-linux-amd64
+            build_dst: src
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
             flags_cc: aarch64-linux-gnu-gcc
             flags_cxx: aarch64-linux-gnu-g++
-            build_dst: build-linux-arm64
+            build_dst: src
 
     steps:
       - name: Checkout github repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -71,8 +77,28 @@ jobs:
         run: |
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
-            -w /app1/src -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
+            -w /app1/src \
+            -v $(pwd):/app1 \
+            golang:${{ env.GOLANG_BUILDER_VERSION }} \
             /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
+
+      - name: Build and push docker image for ${{ matrix.arch }} platform
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.arch }}
+          build-args: |
+            BUILD_DST=${{ matrix.build_dst }}
+            GOLANG_BUILDER_VERSION=${{ env.GOLANG_BUILDER_VERSION }}
+            TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }}
+            BUILD_TAGS=${{ env.BUILD_TAGS }}
+            BUILD_TIMESTAMP=${{ steps.current_ts.outputs.date }}
+            VCS_REF_SHORT=${{ steps.GetShortCommitId.outputs.short_commit_id }}
+            VCS_REF_LONG=${{ github.sha }}
+            VERSION=${{ steps.GetVersion.outputs.ver }}
+          outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
         run: |
@@ -92,6 +118,20 @@ jobs:
           pwd
           find . -ls
 
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.docker_build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"          
+      
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.id }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
   publish-artifacts:
     needs: [ build ]
     runs-on: ubuntu-latest
@@ -99,12 +139,51 @@ jobs:
     
     steps:
 
-      - name: Download all available Artifacts
+      - name: Get short last commit id
+        id: GetShortCommitId
+        run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
+      - name: Download tar.gz artifacts
         uses: actions/download-artifact@v4
         with:
           path: .
           pattern: "${{ github.sha }}_*"
           merge-multiple: true
 
+      - name: Download docker digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get version from Github tag
+        id: GetVersion
+        run: echo ver=$( echo ${{ github.ref_name }} | sed -e 's,.*\/,,g' ) >> $GITHUB_OUTPUT
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKERHUB_REPOSITORY }}
+          tags: |
+            type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+      
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
+
       - name: Debug output
-        run: find . -ls
+        run: |
+          find . -ls
