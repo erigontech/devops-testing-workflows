@@ -41,3 +41,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Debug
+        run: |
+          echo The value of dry_run is ${{ inputs.dry_run}} and the value of the release_version is ${{ inputs.release_version }}
+          
