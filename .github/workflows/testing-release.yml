@@ -50,3 +50,8 @@ jobs:
         run: |
           #docker run --platform ${{ matrix.arch }} --rm -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} -e CC=${{ matrix.flags_cc }} -e CXX=${{ matrix.flags_cxx }} -w /erigon -v $(pwd):/erigon -v $(pwd)/${{ matrix.build_dst }}:/erigon/build/bin golang:${{ env.GOLANG_BUILDER_VERSION }} make
           docker run --rm -e GOOS=linux -e GOARCH=amd64 -w /app1 -v $(pwd):/app1 golang:bookworm /bin/bash -c "ls -l; cd src; go build main.go; ls -lao "
+
+      - name: Debug 2
+        run: |
+          pwd
+          find . -ls
