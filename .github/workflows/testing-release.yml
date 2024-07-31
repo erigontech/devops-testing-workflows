@@ -30,7 +30,7 @@ on:
       dry_run:
         required: true
         type: boolean
-        description: 'When dry_run is set then no artifacts are published and only a draft of the release notes created'
+        description: 'dry_run: when dry_run is set then no artifacts are published and only a draft of the release notes created'
 
 jobs:
   build:
@@ -45,4 +45,8 @@ jobs:
       - name: Debug
         run: |
           echo The value of dry_run is ${{ inputs.dry_run}} and the value of the release_version is ${{ inputs.release_version }}
-          
+      
+      - name: Build binary
+        run: |
+          #docker run --platform ${{ matrix.arch }} --rm -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} -e CC=${{ matrix.flags_cc }} -e CXX=${{ matrix.flags_cxx }} -w /erigon -v $(pwd):/erigon -v $(pwd)/${{ matrix.build_dst }}:/erigon/build/bin golang:${{ env.GOLANG_BUILDER_VERSION }} make
+          docker run --rm -e GOOS=linux -e GOARCH=amd64 -w /app1 -v $(pwd):/app1 golang:bookworm /bin/bash -c "ls -l; cd src; go build main.go; ls -lao "
