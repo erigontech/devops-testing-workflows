@@ -81,7 +81,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.sha }}_${{ env.APPLICATION}}-${{ matrix.id }}
+          name: ${{ github.sha }}_${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz
           path: ./${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz
           retention-days: 1
           compression-level: 0
@@ -102,9 +102,9 @@ jobs:
       - name: Download all available Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ${{ env.APPLICATION }}
+          path: .
           pattern: "${{ github.sha }}_"
           merge-multiple: true
 
       - name: Debug output
-        run: find . -ls
+        run: find . -ls .
