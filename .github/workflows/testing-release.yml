@@ -35,6 +35,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Build ${{ matrix.arch }}
+    strategy:
+      matrix:
+        include:
+          - arch: linux/amd64/v2
+            id: linux-amd64-v2
+            goos: linux
+            goarch: amd64
+            flags_cc: x86_64-linux-gnu-gcc
+            flags_cxx: x86_64-linux-gnu-g++
+            build_dst: build-linux-amd64
+          - arch: linux/arm64
+            id: linux-arm64
+            goos: linux
+            goarch: arm64
+            flags_cc: aarch64-linux-gnu-gcc
+            flags_cxx: aarch64-linux-gnu-g++
+            build_dst: build-linux-arm64
 
     steps:
       - name: Checkout github repo
@@ -49,7 +67,10 @@ jobs:
       - name: Build binary
         run: |
           #docker run --platform ${{ matrix.arch }} --rm -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} -e CC=${{ matrix.flags_cc }} -e CXX=${{ matrix.flags_cxx }} -w /erigon -v $(pwd):/erigon -v $(pwd)/${{ matrix.build_dst }}:/erigon/build/bin golang:${{ env.GOLANG_BUILDER_VERSION }} make
-          docker run --rm -e GOOS=linux -e GOARCH=amd64 -w /app1 -v $(pwd):/app1 golang:bookworm /bin/bash -c "ls -l; cd src; go build main.go; ls -lao "
+          docker run --rm --platform ${{ matrix.arch }} \
+            -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
+            -w /app1 -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
+            /bin/bash -c "git config --global --add safe.directory . ; cd src; go build main.go; ls -lao"
 
       - name: Debug 2
         run: |
