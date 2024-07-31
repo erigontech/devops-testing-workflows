@@ -30,7 +30,7 @@ on:
       dry_run:
         required: true
         type: boolean
-        description: 'When dry_run=true no artifacts would be published and release notes draft only will be prepared'
+        description: 'When dry_run is set then no artifacts are published and only a draft of the release notes created'
 
 jobs:
   build:
