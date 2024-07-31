@@ -60,6 +60,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Debug
         run: |
           echo The value of dry_run is ${{ inputs.dry_run}} and the value of the release_version is ${{ inputs.release_version }}
@@ -69,7 +72,7 @@ jobs:
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
             -w /app1/src -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
-            go build main.go
+            /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
 
       - name: Debug 2
         run: |
