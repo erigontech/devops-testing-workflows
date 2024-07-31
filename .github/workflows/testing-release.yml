@@ -103,8 +103,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: .
-          pattern: "${{ github.sha }}_"
+          pattern: "${{ github.sha }}_*"
           merge-multiple: true
 
       - name: Debug output
-        run: find . -ls .
+        run: find . -ls
