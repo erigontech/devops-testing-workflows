@@ -74,7 +74,35 @@ jobs:
             -w /app1/src -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
             /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
 
+      - name: Compress Artifact for the platform ${{ matrix.arch }}
+        run: |
+          tar czvf ./${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz src/main
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.sha }}:${{ env.APPLICATION}}-${{ matrix.id }}
+          path: ./${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error 
+
       - name: Debug 2
         run: |
           pwd
           find . -ls
+
+  publish-artifacts:
+    runs-on: ubuntu-latest
+    name: Publish artifacts
+    
+    steps:
+
+      - nane: Download all available Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.APPLICATION }}
+          pattern: ${{ github.sha }}:
+
+      - name: Debug output
+        run: find . -ls
