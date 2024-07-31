@@ -64,12 +64,12 @@ jobs:
         run: |
           echo The value of dry_run is ${{ inputs.dry_run}} and the value of the release_version is ${{ inputs.release_version }}
       
-      - name: Build binary
+      - name: Build binary for the platform ${{ matrix.arch }}
         run: |
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
-            -w /app1 -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
-            /bin/bash -c "git config --global --add safe.directory . ; cd src; go build main.go; ls -lao"
+            -w /app1/src -v $(pwd):/app1 golang:${{ env.GOLANG_BUILDER_VERSION }} \
+            go build main.go
 
       - name: Debug 2
         run: |
