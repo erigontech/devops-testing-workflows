@@ -56,6 +56,10 @@ jobs:
             build_dst: src
 
     steps:
+      - name: Debug content of current dir
+        run: |
+          pwd
+          ls -lao
 
       - name: Get short commit id
         id: GetShortCommitId
@@ -72,11 +76,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Debug content of current dir
-        run: |
-          pwd
-          ls -lao
 
       - name: Debug
         run: |
