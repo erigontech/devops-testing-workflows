@@ -73,6 +73,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Debug content of current dir
+        run: |
+          pwd
+          ls -lao
+
       - name: Debug
         run: |
           echo The value of dry_run is ${{ inputs.dry_run}} and the value of the release_version is ${{ inputs.release_version }}
@@ -86,7 +91,7 @@ jobs:
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
             /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
 
-      - name: Build ${{ inputs.perform_release && 'and push' || 'only' }} docker image for ${{ matrix.arch }} platform
+      - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
         uses: docker/build-push-action@v6
         with:
@@ -189,6 +194,12 @@ jobs:
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
+
+      - name: Publish Release ${{ inputs.perform_release || 'draft' }} 
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release edit "${{ needs.release.outputs.tag }}" --draft=false
 
       - name: Debug output
         run: |
