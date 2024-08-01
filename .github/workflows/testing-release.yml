@@ -70,7 +70,9 @@ jobs:
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
         run: |
-          git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' && ( echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1 )
+          if [ ! $( git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' ) ]; then
+            echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1
+          fi
           
       - name: Debug content of current dir
         run: |
