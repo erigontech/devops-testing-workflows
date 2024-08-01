@@ -56,10 +56,16 @@ jobs:
             build_dst: src
 
     steps:
+      - name: Checkout github repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+    
       - name: Debug content of current dir
         run: |
           pwd
           ls -lao
+          set
 
       - name: Get short commit id
         id: GetShortCommitId
