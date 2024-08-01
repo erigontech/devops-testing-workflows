@@ -23,13 +23,19 @@ on:
       #- 'v*.*.*-*'
   workflow_dispatch:
     inputs:
-      release_version:
+      checkout_ref:
         required: true
         type: string
-        description: 'Release version number (v#.#.#) which will be used to checkout branch'
+        default: 'main'
+        description: 'The branch, tag or SHA to checkout and build artifacts from'
+      release_version:
+        required: false
+        type: string
+        description: 'Release version number (v#.#.#)'
       perform_release:
         required: true
         type: boolean
+        default: false
         description: 'perform_release: when set then all artifacts will be published and the release 
           notes will be created. Otherwise build will be done and draft of the release notes will be created.'
 
@@ -60,6 +66,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.checkout_ref }}
     
       - name: Debug content of current dir
         run: |
