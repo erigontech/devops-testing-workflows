@@ -214,7 +214,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release edit "${{ inputs.release_version }}" --draft=false --title "Release ${{ inputs.release_version }}"
+        run: gh release create "${{ inputs.release_version }}" --generate-notes --draft=false --title "Release ${{ inputs.release_version }}"
 
       - name: Debug output
         run: |
