@@ -27,10 +27,11 @@ on:
         required: true
         type: string
         description: 'Release version number (v#.#.#) which will be used to checkout branch'
-      dry_run:
+      perform_release:
         required: true
         type: boolean
-        description: 'dry_run: when dry_run is set then no artifacts are published and only a draft of the release notes created'
+        description: 'perform_release: when set then all artifacts will be published and the release 
+          notes will be created. Otherwise build will be done and draft of the release notes will be created.'
 
 jobs:
   build:
@@ -60,6 +61,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get short commit id
+        id: GetShortCommitId
+        run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -85,7 +90,7 @@ jobs:
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
             /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
 
-      - name: Build and push docker image for ${{ matrix.arch }} platform
+      - name: Build ${{ inputs.perform_release && 'and push' || 'only' }} docker image for ${{ matrix.arch }} platform
         id: docker_build
         uses: docker/build-push-action@v6
         with:
@@ -101,7 +106,8 @@ jobs:
             VCS_REF_SHORT=${{ steps.GetShortCommitId.outputs.short_commit_id }}
             VCS_REF_LONG=${{ github.sha }}
             VERSION=${{ steps.GetVersion.outputs.ver }}
-          outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,push=true
+          ## push when perform_release==true only:
+          outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
         run: |
@@ -142,7 +148,7 @@ jobs:
     
     steps:
 
-      - name: Get short last commit id
+      - name: Get short commit id
         id: GetShortCommitId
         run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
@@ -181,8 +187,9 @@ jobs:
           username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
           password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
       
-      - name: Create manifest list and push
+      - name: Create manifest list and push ${{ inputs.perform_release && 'when perform_release is true' || '' }} 
         working-directory: /tmp/digests
+        if: ${{ inputs.perform_release }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
