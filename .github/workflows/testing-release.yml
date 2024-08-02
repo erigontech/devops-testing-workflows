@@ -197,13 +197,14 @@ jobs:
         id: GetVersion
         run: echo ver=$( echo ${{ github.ref_name }} | sed -e 's,.*\/,,g' ) >> $GITHUB_OUTPUT
       
-      - name: Docker meta
+      - name: Docker meta (configure specific tag for each use-case)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.DOCKERHUB_REPOSITORY }}
           tags: |
-            type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
+            type=sha,priority=100,prefix=sha-,suffix=,format=short,enable=${{ inputs.perform_release && "false" || "true"  }} true
+            type=semver,priority=100,pattern=raw,value=${{ inputs.release_version }},enable=${{ inputs.perform_release && "true" || "false"  }} true
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -218,12 +219,12 @@ jobs:
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
-      - name: Publish ${{ inputs.perform_release || 'draft of' }} the Release notes
+      - name: Publish ${{ inputs.perform_release || 'draft of' }} the Release notes with assets
         if: ${{ inputs.release_version }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "${{ inputs.release_version }}" --generate-notes --draft=${{ inputs.perform_release && 'true' || 'false'}} --title "Release ${{ inputs.release_version }}"
+        run: gh release create "${{ inputs.release_version }}" *.tar.gz --generate-notes --draft=${{ inputs.perform_release && 'true' || 'false'}} --title "Release ${{ inputs.release_version }}"
 
       - name: Debug output
         run: |
