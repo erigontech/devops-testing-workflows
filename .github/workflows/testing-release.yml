@@ -224,12 +224,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "${{ inputs.release_version }}" *.tar.gz \
-          --generate-notes \
-          --target ${{ inputs.checkout_ref }} \
-          --draft=${{ inputs.perform_release && 'false' || 'true'}} \
-          --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
-          --notes "... coming soon"
+        run: |
+          gh release create "${{ inputs.release_version }}" *.tar.gz \
+            --generate-notes \
+            --target ${{ inputs.checkout_ref }} \
+            --draft=${{ inputs.perform_release && 'false' || 'true'}} \
+            --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
+            --notes "... coming soon"
 
       - name: Debug output
         run: |
