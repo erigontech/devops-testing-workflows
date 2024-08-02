@@ -125,16 +125,22 @@ jobs:
           outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
+        id: archiving
         env:
-          THIS_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_APP: ${{ env.APPLICATION }}
+          LOCAL_ARCH: ${{ matrix.id }}
         run: |
-          tar czvf ./${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}.tar.gz --transform "s,^,${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}/," -C src/ main
+          echo "Compressing archive with name ${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}.tar.gz :"
+          echo "LOCAL_VERSION=${LOCAL_VERSION}" >> "$GITHUB_ENV"
+          echo "LOCAL_APP=${LOCAL_APP}" >> "$GITHUB_ENV"
+          echo "LOCAL_ARCH=${LOCAL_ARCH}" >> "$GITHUB_ENV"
+          tar czvf ./${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}.tar.gz --transform "s,^,${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}/," -C src/ main
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.sha }}_${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz
-          path: ./${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz
+          path: ./${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}.tar.gz
           retention-days: 1
           compression-level: 0
           if-no-files-found: error 
