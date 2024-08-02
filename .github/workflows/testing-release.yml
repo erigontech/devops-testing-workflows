@@ -31,7 +31,7 @@ on:
       release_version:
         required: false
         type: string
-        description: 'Release version number (v#.#.#)'
+        description: 'Release version number (Pattern - v#.#.# , f.e. v2.41.3 or v3.0.0 )'
       perform_release:
         required: true
         type: boolean
@@ -125,8 +125,10 @@ jobs:
           outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
+        env:
+          THIS_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id }}
         run: |
-          tar czvf ./${{ env.APPLICATION}}-${{ matrix.id }}.tar.gz src/main
+          tar czvf ./${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}.tar.gz --transform "s,^,${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}/," -C src/ main
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
