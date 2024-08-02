@@ -126,7 +126,7 @@ jobs:
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
         env:
-          THIS_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id }}
+          THIS_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
         run: |
           tar czvf ./${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}.tar.gz --transform "s,^,${{ env.APPLICATION}}-${{ matrix.id }}-${THIS_VERSION}/," -C src/ main
 
