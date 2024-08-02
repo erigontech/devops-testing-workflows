@@ -27,7 +27,7 @@ on:
         required: true
         type: string
         default: 'main'
-        description: 'The branch, tag or SHA to checkout and build artifacts from'
+        description: 'The branch or Commid ID (SHA) to checkout and build artifacts from'
       release_version:
         required: false
         type: string
@@ -224,7 +224,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "${{ inputs.release_version }}" *.tar.gz --generate-notes --draft=${{ inputs.perform_release && 'true' || 'false'}} --title "Release ${{ inputs.release_version }}"
+        run: gh release create "${{ inputs.release_version }}" *.tar.gz \
+          --generate-notes \
+          --target ${{ inputs.checkout_ref }} \
+          --draft=${{ inputs.perform_release && 'false' || 'true'}} \
+          --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
+          --notes "... coming soon"
 
       - name: Debug output
         run: |
