@@ -218,12 +218,12 @@ jobs:
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
-      - name: Publish Release ${{ inputs.perform_release || 'draft' }} 
+      - name: Publish ${{ inputs.perform_release || 'draft of' }} the Release notes
         if: ${{ inputs.release_version }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "${{ inputs.release_version }}" --generate-notes --draft=false --title "Release ${{ inputs.release_version }}"
+        run: gh release create "${{ inputs.release_version }}" --generate-notes --draft=${{ inputs.perform_release && 'true' || 'false'}} --title "Release ${{ inputs.release_version }}"
 
       - name: Debug output
         run: |
