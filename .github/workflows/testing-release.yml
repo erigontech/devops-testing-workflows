@@ -226,7 +226,7 @@ jobs:
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.LOCAL_DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
-      - name: Publish ${{ inputs.perform_release || 'draft of' }} the Release notes with assets
+      - name: Publish ${{ inputs.perform_release && '' || 'draft of' }} the Release notes with assets
         if: ${{ inputs.release_version }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -238,7 +238,7 @@ jobs:
             --target ${{ inputs.checkout_ref }} \
             --draft=${{ inputs.perform_release && 'false' || 'true'}} \
             --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
-            --notes "... coming soon\n Docker image tags released:\n ${{ env.DOCKER_META_TAGS }}\n ... coming soon\n"
+            --notes "<br>... coming soon<br>Docker image tags released:<br> ${{ env.DOCKER_META_TAGS }}<br> ... coming soon"
 
       - name: Debug output
         run: |
