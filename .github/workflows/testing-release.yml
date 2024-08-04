@@ -109,11 +109,11 @@ jobs:
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
         uses: docker/build-push-action@v6
+        env:
+          LOCAL_DOCKERHUB_REPOSITORY: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
         with:
           context: .
           file: ./Dockerfile
-          env:
-            LOCAL_DOCKERHUB_REPOSITORY: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
           platforms: ${{ matrix.arch }}
           build-args: |
             BUILD_DST=${{ matrix.build_dst }}
