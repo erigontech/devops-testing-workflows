@@ -231,13 +231,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          DOCKER_META_TAGS: ${{ fromJSON(steps.meta.outputs.tags) }}
         run: |
           gh release create "${{ inputs.release_version }}" *.tar.gz \
             --generate-notes \
             --target ${{ inputs.checkout_ref }} \
             --draft=${{ inputs.perform_release && 'false' || 'true'}} \
             --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
-            --notes "... coming soon\n Docker image released:\n ${{ fromJSON(steps.meta.outputs.tags) }}\n ... coming soon\n"
+            --notes "... coming soon\n Docker image tags released:\n ${{ env.DOCKER_META_TAGS }}\n ... coming soon\n"
 
       - name: Debug output
         run: |
