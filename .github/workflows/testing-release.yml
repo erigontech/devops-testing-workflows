@@ -231,7 +231,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          DOCKER_META_TAGS: ${{ fromJSON(steps.meta.outputs.tags) }}
+          DOCKER_META_TAGS: ${{ fromJSON(steps.meta.outputs.json).tags }}
         run: |
           gh release create "${{ inputs.release_version }}" *.tar.gz \
             --generate-notes \
