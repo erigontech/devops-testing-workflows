@@ -6,8 +6,9 @@ env:
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
   TARGET_BASE_VERSION: "bookworm-20240722"
   PACKAGE_NAME: "github.com/erigontech/erigon"
-  DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
   BUILD_TAGS: "nosqlite,noboltdb,nosilkworm"
+  DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
+  DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   VERSION: "2.65.4"
   VERSION_TMP: ".."
 
@@ -111,6 +112,8 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          env:
+            LOCAL_DOCKERHUB_REPOSITORY: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
           platforms: ${{ matrix.arch }}
           build-args: |
             BUILD_DST=${{ matrix.build_dst }}
@@ -122,7 +125,7 @@ jobs:
             VCS_REF_LONG=${{ github.sha }}
             VERSION=${{ steps.GetVersion.outputs.ver }}
           ## push when perform_release==true only:
-          outputs: type=image,name=${{ env.DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
+          outputs: type=image,name=${{ env.LOCAL_DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
       - name: Compress Artifact for the platform ${{ matrix.arch }}
         id: archiving
@@ -201,7 +204,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.DOCKERHUB_REPOSITORY }}
+          images: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
+          flavor: |
+            latest=false
           tags: |
             type=sha,priority=100,prefix=sha-,suffix=,format=short,enable=${{ inputs.perform_release && 'false' || 'true' }}
             type=semver,priority=100,pattern={{raw}},value=${{ inputs.release_version }},enable=${{ inputs.perform_release && 'true' || 'false' }}
@@ -212,12 +217,14 @@ jobs:
           username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
           password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
       
-      - name: Create manifest list and push ${{ inputs.perform_release && 'when perform_release is true' || '' }} 
+      - name: Create manifest list and push ${{ inputs.perform_release && 'when perform_release is true' || '' }}
         working-directory: /tmp/digests
         if: ${{ inputs.perform_release }}
+        env:
+          LOCAL_DOCKERHUB_REPOSITORY: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
+            $(printf '${{ env.LOCAL_DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
       - name: Publish ${{ inputs.perform_release || 'draft of' }} the Release notes with assets
         if: ${{ inputs.release_version }}
@@ -230,7 +237,7 @@ jobs:
             --target ${{ inputs.checkout_ref }} \
             --draft=${{ inputs.perform_release && 'false' || 'true'}} \
             --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
-            --notes "... coming soon"
+            --notes "... coming soon\n Docker image released:\n ${{ fromJSON(steps.meta.outputs.tags) }}\n ... coming soon\n"
 
       - name: Debug output
         run: |
