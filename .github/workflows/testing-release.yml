@@ -238,8 +238,5 @@ jobs:
             --target ${{ inputs.checkout_ref }} \
             --draft=${{ inputs.perform_release && 'false' || 'true'}} \
             --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
-            --notes "**Improvements:**... coming soon **Bugfixes:** ... coming soon **Docker images:** Docker image released:<br> ${{ env.DOCKER_META_TAGS }}<br> ... coming soon"
+            --notes "**Improvements:**<br>... coming soon <br>**Bugfixes:**<br> ... coming soon<br>**Docker images:**<br>Docker image released:<br> ${{ env.DOCKER_META_TAGS }}<br> ... coming soon<br>"
 
-      - name: Debug output
-        run: |
-          find . -ls
