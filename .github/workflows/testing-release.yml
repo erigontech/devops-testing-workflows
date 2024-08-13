@@ -57,7 +57,15 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           fetch-depth: 1
+          fetch-tags: true
           ref: ${{ inputs.checkout_ref }}
+
+      - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
+        if: ${{ inputs.release_version }}
+        run: |
+          if [ $( git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' ) ]; then
+            echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1
+          fi
 
   build:
     runs-on: ubuntu-24.04
@@ -86,12 +94,6 @@ jobs:
         with:
           fetch-depth: 1
           ref: ${{ needs.init.outputs.my_git_ref_id }}
-
-      - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
-        run: |
-          if [ $( git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' ) ]; then
-            echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1
-          fi
           
       - name: Debug content of current dir
         run: |
@@ -258,6 +260,10 @@ jobs:
           LOCAL_APP: ${{ env.APPLICATION }}
         run: |
           sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
+          echo "DEBUG: content of the file ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt :"
+          cat ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
+          echo "DEBUG: end of content"
+          ls -lao
 
       - name: Create GIT Tag for the released version
         if: ${{ inputs.release_version }}
