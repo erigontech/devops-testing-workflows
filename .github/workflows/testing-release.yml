@@ -62,8 +62,9 @@ jobs:
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
         if: ${{ inputs.perform_release }}
         run: |
-          git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' \
-            && ( echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1 )
+          git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}' \
+            && ( echo "FAILURE: Tag ${{ inputs.release_version}} already exists!!!" ; exit 1 ) \
+            || echo "OK: Tag ${{ inputs.release_version}} does not exists. Proceeding to run workflow."
 
   build:
     runs-on: ubuntu-24.04
