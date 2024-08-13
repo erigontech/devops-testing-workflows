@@ -283,12 +283,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
+          GITHUB_RELEASE_TARGET: ${{ needs.init.outputs.my_git_ref_id }}
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
         run: |
           gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
             --generate-notes \
             --verify-tag \
-            --target ${{ needs.init.outputs.my_git_ref_id }} \
+            --target ${GITHUB_RELEASE_TARGET} \
             --draft=true \
             --title "${{ inputs.release_version }}" \
             --notes "**Improvements:**<br>- ...coming soon <br><br>**Bugfixes:**<br><br>- ...coming soon<br><br>**Docker images:**<br><br>Docker image released:<br> ${{ env.DOCKER_META_TAGS }}<br><br>... coming soon<br>"
