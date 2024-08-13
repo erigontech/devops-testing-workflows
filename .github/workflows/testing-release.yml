@@ -45,7 +45,7 @@ jobs:
 
   init:
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ JOB_TIMEOUT }}
+    timeout-minutes: ${{ env.JOB_TIMEOUT }}
     name: Init
     outputs:
       my_git_ref_id: ${{ steps.checkout.outputs.commit }}
@@ -60,7 +60,7 @@ jobs:
 
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ JOB_TIMEOUT }}
+    timeout-minutes: ${{ env.JOB_TIMEOUT }}
     name: Build ${{ matrix.arch }}
     needs: [ init ]
     strategy:
@@ -189,7 +189,7 @@ jobs:
   publish-artifacts:
     needs: [ init, build ]
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ JOB_TIMEOUT }}
+    timeout-minutes: ${{ env.JOB_TIMEOUT }}
     name: Publish artifacts
     
     steps:
