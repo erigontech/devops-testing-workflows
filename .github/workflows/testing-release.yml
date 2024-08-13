@@ -99,7 +99,7 @@ jobs:
         run: |
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
-            {{ matrix.docker_run_envs }} \
+            ${{ matrix.docker_run_envs }} \
             -w /app1/src \
             -v $(pwd):/app1 \
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
