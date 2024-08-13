@@ -226,11 +226,17 @@ jobs:
             $(printf '${{ env.LOCAL_DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
       - name: Generate checksum file
+        env:
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_APP: ${{ env.APPLICATION }}
         run: |
           sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
 
       - name: Create GIT Tag for the released version
         if: ${{ inputs.release_version }}
+        env:
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_APP: ${{ env.APPLICATION }}
         run: |
           git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
