@@ -57,11 +57,10 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           fetch-depth: 1
-          fetch-tags: true
           ref: ${{ inputs.checkout_ref }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
-        if: ${{ inputs.release_version }}
+        if: ${{ inputs.perform_release }}
         run: |
           if [ $( git ls-remote --exit-code --tags origin '${{ inputs.release_version }}' ) ]; then
             echo "FAILURE: Tag ${{ inputs.release_version}} already exists!" ; exit 1
@@ -259,14 +258,14 @@ jobs:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
           LOCAL_APP: ${{ env.APPLICATION }}
         run: |
-          sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
-          echo "DEBUG: content of the file ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt :"
-          cat ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
+          sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksums.txt
+          echo "DEBUG: content of the file ${LOCAL_APP}_${LOCAL_VERSION}_checksums.txt :"
+          cat ${LOCAL_APP}_${LOCAL_VERSION}_checksums.txt
           echo "DEBUG: end of content"
           ls -lao
 
       - name: Create GIT Tag for the released version
-        if: ${{ inputs.release_version }}
+        if: ${{ inputs.perform_release }}
         env:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
           LOCAL_APP: ${{ env.APPLICATION }}
@@ -279,7 +278,7 @@ jobs:
           git tag
 
       - name: Publish draft of the Release notes with assets
-        if: ${{ inputs.release_version }}
+        if: ${{ inputs.perform_release }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
