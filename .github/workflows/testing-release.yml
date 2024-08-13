@@ -207,8 +207,8 @@ jobs:
       - name: Checkout github repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
-          fetch-depth: 1
-          ref: ${{ needs.init.outputs.my_git_ref_id }}
+        #  fetch-depth: 1
+        #  ref: ${{ needs.init.outputs.my_git_ref_id }}
 
       - name: Get short commit id
         id: GetShortCommitId
@@ -272,7 +272,7 @@ jobs:
           echo "DEBUG: end of content"
           ls -lao
 
-      - name: Create GIT Tag for the released version
+      - name: Create GIT Tag for the released version pointing to commit id ${{ needs.init.outputs.my_git_ref_id }}
         if: ${{ inputs.perform_release }}
         env:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
@@ -280,7 +280,7 @@ jobs:
         run: |
           git config --global user.email ${{ env.GITHUB_AUTOMATION_EMAIL }}
           git config --global user.name "${{ env.GITHUB_AUTOMATION_NAME }}"
-          git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
+          git tag -a ${LOCAL_VERSION} ${{ needs.init.outputs.my_git_ref_id }} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
 
       - name: Publish draft of the Release notes with assets
