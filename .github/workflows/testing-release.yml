@@ -42,6 +42,7 @@ on:
         description: 'perform_release: when set then all artifacts will be published and the release 
           notes will be created. Otherwise build will be done and draft of the release notes will be created.'
 
+
 jobs:
 
   init:
