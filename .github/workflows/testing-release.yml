@@ -266,7 +266,7 @@ jobs:
           LOCAL_APP: ${{ env.APPLICATION }}
         run: |
           git config --global user.email ${{ env.GITHUB_AUTOMATION_EMAIL }}
-          git config --global user.name ${{ env.GITHUB_AUTOMATION_NAME }}
+          git config --global user.name "${{ env.GITHUB_AUTOMATION_NAME }}"
           git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
           echo "List of all currect tags:"
