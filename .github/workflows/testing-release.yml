@@ -227,7 +227,7 @@ jobs:
 
       - name: Generate checksum file
         run: |
-          sha256 *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
+          sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
 
       - name: Create GIT Tag for the released version
         if: ${{ inputs.release_version }}
