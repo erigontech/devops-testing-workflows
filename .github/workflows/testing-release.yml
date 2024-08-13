@@ -60,7 +60,7 @@ jobs:
 
       - name: Get commit id
         id: getCommitId
-        rub: |
+        run: |
           echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
