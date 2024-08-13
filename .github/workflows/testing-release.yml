@@ -64,7 +64,7 @@ jobs:
         run: |
           if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
             echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
-            fail
+            exit 1
           else
             echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
           fi
