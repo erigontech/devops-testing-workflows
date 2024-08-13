@@ -11,6 +11,8 @@ env:
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   VERSION: "2.65.4"
   VERSION_TMP: ".."
+  GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
+  GITHUB_AUTOMATION_NAME: "Erigon Github Automation"
 
 on:
   push:
@@ -263,6 +265,8 @@ jobs:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
           LOCAL_APP: ${{ env.APPLICATION }}
         run: |
+          git config --global user.email ${{ env.GITHUB_AUTOMATION_EMAIL }}
+          git config --global user.name ${{ env.GITHUB_AUTOMATION_NAME }}
           git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
           echo "List of all currect tags:"
