@@ -206,8 +206,8 @@ jobs:
 
       - name: Checkout github repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
-        #with:
-        #  fetch-depth: 1
+        with:
+          fetch-depth: 0
         #  ref: ${{ needs.init.outputs.my_git_ref_id }}
 
       - name: Get short commit id
