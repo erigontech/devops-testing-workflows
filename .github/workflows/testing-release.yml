@@ -14,8 +14,8 @@ env:
 
 on:
   push:
-    #branches-ignore:
-    #  - '**'
+    branches-ignore:
+      - '**'
     #branches:
     #  - 'master'
     #tags:
@@ -51,15 +51,13 @@ jobs:
             id: linux-amd64-v2
             goos: linux
             goarch: amd64
-            flags_cc: x86_64-linux-gnu-gcc
-            flags_cxx: x86_64-linux-gnu-g++
+            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
             build_dst: src
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
-            flags_cc: aarch64-linux-gnu-gcc
-            flags_cxx: aarch64-linux-gnu-g++
+            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
             build_dst: src
 
     steps:
@@ -97,10 +95,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build binary for the platform ${{ matrix.arch }}
+      - name: Build binaries for the platform ${{ matrix.arch }}
         run: |
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
+            {{ matrix.docker_run_envs }} \
             -w /app1/src \
             -v $(pwd):/app1 \
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
@@ -138,13 +137,13 @@ jobs:
           echo "LOCAL_VERSION=${LOCAL_VERSION}" >> "$GITHUB_ENV"
           echo "LOCAL_APP=${LOCAL_APP}" >> "$GITHUB_ENV"
           echo "LOCAL_ARCH=${LOCAL_ARCH}" >> "$GITHUB_ENV"
-          tar czvf ./${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}.tar.gz --transform "s,^,${LOCAL_APP}-${LOCAL_ARCH}-${LOCAL_VERSION}/," -C src/ main
+          tar czvf ./${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}.tar.gz --transform "s,^,${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}/," -C src/ main
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.run_id }}_${{ env.LOCAL_APP }}-${{ env.LOCAL_ARCH }}-${{ env.LOCAL_VERSION }}.tar.gz
-          path: ./${{ env.LOCAL_APP }}-${{ env.LOCAL_ARCH }}-${{ env.LOCAL_VERSION }}.tar.gz
+          name: ${{ github.run_id }}_${{ env.LOCAL_APP }}_${{ env.LOCAL_VERSION }}_${{ env.LOCAL_ARCH }}.tar.gz
+          path: ./${{ env.LOCAL_APP }}_${{ env.LOCAL_VERSION }}_${{ env.LOCAL_ARCH }}-.tar.gz
           retention-days: 1
           compression-level: 0
           if-no-files-found: error 
@@ -226,17 +225,29 @@ jobs:
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.LOCAL_DOCKERHUB_REPOSITORY }}@sha256:%s ' *)       
 
-      - name: Publish ${{ inputs.perform_release && '' || 'draft of' }} the Release notes with assets
+      - name: Generate checksum file
+        run: |
+          sha256 *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksum.txt
+
+      - name: Create GIT Tag for the released version
+        if: ${{ inputs.release_version }}
+        run: |
+          git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
+          git push origin ${LOCAL_VERSION}
+          echo "List of all currect tags:"
+          git tag
+
+      - name: Publish draft of the Release notes with assets
         if: ${{ inputs.release_version }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
         run: |
-          gh release create "${{ inputs.release_version }}" *.tar.gz \
+          gh release create "${{ inputs.release_version }}" *.tar.gz *_checksums.txt \
             --generate-notes \
             --target ${{ inputs.checkout_ref }} \
-            --draft=${{ inputs.perform_release && 'false' || 'true'}} \
+            --draft=true \
             --title "${{ env.APPLICATION}} ${{ inputs.release_version }}" \
             --notes "**Improvements:**<br>- ...coming soon <br><br>**Bugfixes:**<br><br>- ...coming soon<br><br>**Docker images:**<br><br>Docker image released:<br> ${{ env.DOCKER_META_TAGS }}<br><br>... coming soon<br>"
 
