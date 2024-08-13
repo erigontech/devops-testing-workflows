@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 1
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Check if tag ${{ inputs.release_version }} already exists. Exit pipeline if tag already exist.
+      - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
         if: ${{ inputs.perform_release }}
         run: |
           if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
@@ -277,8 +277,6 @@ jobs:
           git config --global user.name "${{ env.GITHUB_AUTOMATION_NAME }}"
           git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
-          echo "List of all currect tags:"
-          git tag
 
       - name: Publish draft of the Release notes with assets
         if: ${{ inputs.perform_release }}
