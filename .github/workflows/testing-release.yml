@@ -11,7 +11,6 @@ env:
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   VERSION: "2.65.4"
   VERSION_TMP: ".."
-  JOB_TIMEOUT: 30
 
 on:
   push:
@@ -45,7 +44,7 @@ jobs:
 
   init:
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ env.JOB_TIMEOUT }}
+    timeout-minutes: 30
     name: Init
     outputs:
       my_git_ref_id: ${{ steps.checkout.outputs.commit }}
@@ -60,7 +59,7 @@ jobs:
 
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ env.JOB_TIMEOUT }}
+    timeout-minutes: 30
     name: Build ${{ matrix.arch }}
     needs: [ init ]
     strategy:
@@ -189,7 +188,7 @@ jobs:
   publish-artifacts:
     needs: [ init, build ]
     runs-on: ubuntu-24.04
-    timeout-minutes: ${{ env.JOB_TIMEOUT }}
+    timeout-minutes: 30
     name: Publish artifacts
     
     steps:
