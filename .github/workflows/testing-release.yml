@@ -49,15 +49,19 @@ jobs:
     timeout-minutes: 30
     name: Init
     outputs:
-      my_git_ref_id: ${{ steps.checkout.outputs.commit }}
+      my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
 
     steps:
       - name: Fast checkout git repo in order to get commit id for further checkouts
-        id: checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           fetch-depth: 1
           ref: ${{ inputs.checkout_ref }}
+
+      - name: Get commit id
+        id: getCommitId
+        rub: |
+          echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
         if: ${{ inputs.perform_release }}
