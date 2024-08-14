@@ -2,15 +2,13 @@ name: Release
 run-name: "Testing release workflow"
 
 env:
-  APPLICATION: "test-app"
+  APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
   TARGET_BASE_VERSION: "bookworm-20240722"
-  PACKAGE_NAME: "github.com/erigontech/erigon"
+  APP_REPO: "github.com/erigontech/erigon"
   BUILD_TAGS: "nosqlite,noboltdb,nosilkworm"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
-  VERSION: "2.65.4"
-  VERSION_TMP: ".."
   GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
   GITHUB_AUTOMATION_NAME: "Erigon Github Automation"
 
@@ -50,11 +48,13 @@ jobs:
     name: Init
     outputs:
       my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
+      my_short_commit_id: ${{ steps.getCommitId.outputs.short_commit_id }}
 
     steps:
       - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
+          repository: ${{ env.APP_REPO }}
           fetch-depth: 1
           ref: ${{ inputs.checkout_ref }}
 
@@ -72,11 +72,13 @@ jobs:
         id: getCommitId
         run: |
           echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
+          echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
 
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    name: Build ${{ matrix.arch }}
+    name: Build ${{ matrix.id }}
     needs: [ init ]
     strategy:
       matrix:
@@ -86,34 +88,31 @@ jobs:
             goos: linux
             goarch: amd64
             docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
-            build_dst: src
             build_docker_image: true
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
             docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
-            build_dst: src
             build_docker_image: true
           - arch: linux/arm64
             id: darwin-arm64
             goos: darwin
             goarch: arm64
             docker_run_envs: -e CC=oa64-clang -e CXX=oa64-clang++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
-            build_dst: src
             build_docker_image: false
           - arch: linux/amd64/v2
             id: darwin-amd64
             goos: darwin
             goarch: amd64
             docker_run_envs: -e CC=o64-clang -e CXX=o64-clang++ -e CGO_LDFLAGS="-s -w"
-            build_dst: src
             build_docker_image: false
 
     steps:
       - name: Checkout github repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
+          repository: ${{ env.APP_REPO }}
           fetch-depth: 1
           ref: ${{ needs.init.outputs.my_git_ref_id }}
           
@@ -122,10 +121,6 @@ jobs:
           pwd
           ls -lao
           set
-
-      - name: Get short commit id
-        id: GetShortCommitId
-        run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         if: ${{ matrix.build_docker_image }}
@@ -145,10 +140,10 @@ jobs:
           docker run --rm --platform ${{ matrix.arch }} \
             -e GOOS=${{ matrix.goos }} -e GOARCH=${{ matrix.goarch }} \
             ${{ matrix.docker_run_envs }} \
-            -w /app1/src \
-            -v $(pwd):/app1 \
+            -w /${{ env.APPLICATION }}/ \
+            -v $(pwd):/${{ env.APPLICATION}} \
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
-            /bin/bash -c "git config --global --add safe.directory . ; go build main.go; ls -lao"
+            /bin/bash -c "git config --global --add safe.directory . ; make"
 
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
@@ -161,14 +156,14 @@ jobs:
           file: ./Dockerfile
           platforms: ${{ matrix.arch }}
           build-args: |
-            BUILD_DST=${{ matrix.build_dst }}
+            BUILD_DST=build/bin
             GOLANG_BUILDER_VERSION=${{ env.GOLANG_BUILDER_VERSION }}
             TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }}
             BUILD_TAGS=${{ env.BUILD_TAGS }}
             BUILD_TIMESTAMP=${{ steps.current_ts.outputs.date }}
-            VCS_REF_SHORT=${{ steps.GetShortCommitId.outputs.short_commit_id }}
+            VCS_REF_SHORT=${{ needs.init.outputs.my_short_commit_id }}
             VCS_REF_LONG=${{ github.sha }}
-            VERSION=${{ steps.GetVersion.outputs.ver }}
+            VERSION=${{ inputs.release_version }}
           ## push when perform_release==true only:
           outputs: type=image,name=${{ env.LOCAL_DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
@@ -226,12 +221,9 @@ jobs:
       - name: Checkout github repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
-          fetch-depth: 0
-        #  ref: ${{ needs.init.outputs.my_git_ref_id }}
-
-      - name: Get short commit id
-        id: GetShortCommitId
-        run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+          repository: ${{ env.APP_REPO }}
+          fetch-depth: 1
+          ref: ${{ needs.init.outputs.my_git_ref_id }}
 
       - name: Download tar.gz artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  ## v4.1.8
@@ -250,9 +242,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db ## v3.6.1
 
-      - name: Get version from Github tag
-        id: GetVersion
-        run: echo ver=$( echo ${{ github.ref_name }} | sed -e 's,.*\/,,g' ) >> $GITHUB_OUTPUT
+      #- name: Get version from Github tag
+      #  id: GetVersion
+      #  run: echo ver=$( echo ${{ github.ref_name }} | sed -e 's,.*\/,,g' ) >> $GITHUB_OUTPUT
       
       - name: Docker meta (configure specific tag for each use-case)
         id: meta
@@ -282,7 +274,7 @@ jobs:
 
       - name: Generate checksum file
         env:
-          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',needs.init.outputs.my_short_commit_id) }}
           LOCAL_APP: ${{ env.APPLICATION }}
         run: |
           sha256sum *.tar.gz > ${LOCAL_APP}_${LOCAL_VERSION}_checksums.txt
@@ -291,16 +283,7 @@ jobs:
           echo "DEBUG: end of content"
           ls -lao
 
-      - name: Create and push a git tag for the released version
-        if: ${{ inputs.perform_release }}
-        env:
-          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
-          LOCAL_APP: ${{ env.APPLICATION }}
-        run: |
-          git config --global user.email ${{ env.GITHUB_AUTOMATION_EMAIL }}
-          git config --global user.name "${{ env.GITHUB_AUTOMATION_NAME }}"
-          git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
-          git push origin ${LOCAL_VERSION}
+## temporary removed -- see tmp file
 
       - name: Publish draft of the Release notes with assets
         if: ${{ inputs.perform_release }}
@@ -309,7 +292,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
           GITHUB_RELEASE_TARGET: ${{ needs.init.outputs.my_git_ref_id }}
-          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',needs.init.outputs.my_short_commit_id) }}
         run: |
           gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
             --generate-notes \
