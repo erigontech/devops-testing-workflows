@@ -95,18 +95,6 @@ jobs:
             goarch: arm64
             docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
             build_docker_image: true
-          - arch: linux/arm64
-            id: darwin-arm64
-            goos: darwin
-            goarch: arm64
-            docker_run_envs: -e CC=oa64-clang -e CXX=oa64-clang++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
-            build_docker_image: false
-          - arch: linux/amd64/v2
-            id: darwin-amd64
-            goos: darwin
-            goarch: amd64
-            docker_run_envs: -e CC=o64-clang -e CXX=o64-clang++ -e CGO_LDFLAGS="-s -w"
-            build_docker_image: false
 
     steps:
       - name: Checkout github repo
@@ -143,7 +131,7 @@ jobs:
             -w /${{ env.APPLICATION }}/ \
             -v $(pwd):/${{ env.APPLICATION}} \
             golang:${{ env.GOLANG_BUILDER_VERSION }} \
-            /bin/bash -c "git config --global --add safe.directory . ; make"
+            /bin/bash -c "git config --global --add safe.directory /erigon ; make"
 
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
