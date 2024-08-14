@@ -292,7 +292,6 @@ jobs:
         run: |
           gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
             --generate-notes \
-            --verify-tag \
             --target ${GITHUB_RELEASE_TARGET} \
             --draft=true \
             --title "${{ inputs.release_version }}" \
