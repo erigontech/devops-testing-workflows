@@ -287,7 +287,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
-          GITHUB_RELEASE_TARGET: ${{ needs.init.outputs.my_git_ref_id }}
+          GITHUB_RELEASE_TARGET_OLD: ${{ needs.init.outputs.my_git_ref_id }}
+          GITHUB_RELEASE_TARGET: main
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',needs.init.outputs.my_short_commit_id) }}
         run: |
           gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
