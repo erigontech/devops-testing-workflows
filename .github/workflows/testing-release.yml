@@ -163,7 +163,7 @@ jobs:
           ## push when perform_release==true only:
           outputs: type=image,name=${{ env.LOCAL_DOCKERHUB_REPOSITORY }},push-by-digest=true,name-canonical=true,${{ inputs.perform_release && 'push=true' || 'push=false' }}
 
-      - name: Compress Artifact for the platform ${{ matrix.arch }}
+      - name: Compress Artifact for the platform ${{ matrix.platform }}
         id: archiving
         env:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
@@ -174,7 +174,7 @@ jobs:
           echo "LOCAL_VERSION=${LOCAL_VERSION}" >> "$GITHUB_ENV"
           echo "LOCAL_APP=${LOCAL_APP}" >> "$GITHUB_ENV"
           echo "LOCAL_ARCH=${LOCAL_ARCH}" >> "$GITHUB_ENV"
-          tar czvf ./${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}.tar.gz --transform "s,^,${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}/," -C src/ main
+          tar czvf ./${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}.tar.gz --transform "s,^,${LOCAL_APP}_${LOCAL_VERSION}_${LOCAL_ARCH}/," -C build/bin *
 
       - name: Upload Artifact
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
