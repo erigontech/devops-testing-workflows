@@ -87,13 +87,13 @@ jobs:
             id: linux-amd64
             goos: linux
             goarch: amd64
-            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
+            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e CGO_ENABLED=1 -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
             build_docker_image: true
           - platform: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
-            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
+            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e CGO_ENABLED=1 -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
             build_docker_image: true
 
     steps:
