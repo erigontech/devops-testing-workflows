@@ -7,7 +7,6 @@ env:
   BUILDER_IMAGE: "goreleaser/goreleaser-cross:v1.21.9"
   TARGET_BASE_VERSION: "bookworm-20240722"
   APP_REPO: "erigontech/erigon"
-  BUILD_TAGS: "nosqlite,noboltdb,nosilkworm"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
@@ -88,13 +87,13 @@ jobs:
             id: linux-amd64
             goos: linux
             goarch: amd64
-            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS=${{ env.BUILD_TAGS }}
+            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
             build_docker_image: true
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
-            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS=${{ env.BUILD_TAGS }}
+            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS="nosqlite,noboltdb,nosilkworm"
             build_docker_image: true
 
     steps:
