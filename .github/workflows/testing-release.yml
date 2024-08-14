@@ -152,7 +152,7 @@ jobs:
           file: ./Dockerfile.NEW
           platforms: ${{ matrix.platform }}
           build-args: |
-            BUILD_DST=./build/bin
+            BUILD_DST=erigon/build/bin
             GOLANG_BUILDER_VERSION=${{ env.GOLANG_BUILDER_VERSION }}
             TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }}
             BUILD_TAGS=${{ env.BUILD_TAGS }}
