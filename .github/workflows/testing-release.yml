@@ -132,6 +132,14 @@ jobs:
             -v $(pwd):/${{ env.APPLICATION}} \
             --entrypoint /usr/bin/make \
             ${{ env.BUILDER_IMAGE }}
+          echo "PWD:"
+          pwd
+          echo "DEBUG ls -lao"
+          ls -lao
+          echo "DEBUG 2"
+          ls -lao build || true
+          echo "DEBUG 3"
+          ls -lao build/bin || true
 
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.platform }} platform
         id: docker_build
