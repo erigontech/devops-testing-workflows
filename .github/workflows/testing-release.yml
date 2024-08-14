@@ -4,6 +4,7 @@ run-name: "Testing release workflow"
 env:
   APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
+  BUILDER_IMAGE: "goreleaser/goreleaser-cross:v1.21.9"
   TARGET_BASE_VERSION: "bookworm-20240722"
   APP_REPO: "erigontech/erigon"
   BUILD_TAGS: "nosqlite,noboltdb,nosilkworm"
@@ -87,13 +88,13 @@ jobs:
             id: linux-amd64
             goos: linux
             goarch: amd64
-            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
+            docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS=${{ env.BUILD_TAGS }}
             build_docker_image: true
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
-            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
+            docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'" -e BUILD_TAGS=${{ env.BUILD_TAGS }}
             build_docker_image: true
 
     steps:
@@ -130,8 +131,8 @@ jobs:
             ${{ matrix.docker_run_envs }} \
             -w /${{ env.APPLICATION }}/ \
             -v $(pwd):/${{ env.APPLICATION}} \
-            golang:${{ env.GOLANG_BUILDER_VERSION }} \
-            /bin/bash -c "git config --global --add safe.directory /erigon ; make"
+            --entrypoint /usr/bin/make \
+            ${{ env.BUILDER_IMAGE }}
 
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
