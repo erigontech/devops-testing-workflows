@@ -30,18 +30,17 @@ on:
         required: true
         type: string
         default: 'main'
-        description: 'The branch or Commid ID (SHA) to checkout and build artifacts from'
+        description: 'The branch to checkout and build artifacts from. By default "main".'
       release_version:
         required: false
         type: string
-        description: 'Release version number (Pattern - v#.#.# , f.e. v2.41.3 or v3.0.0 )'
+        description: 'Release version number (Pattern - v#.#.# , f.e. v2.41.3 or v3.0.0 or v3.0.0-alpha1 for pre-releases)'
       perform_release:
         required: true
         type: boolean
         default: false
-        description: 'perform_release: when set then all artifacts will be published and the release 
-          notes will be created. Otherwise build will be done and draft of the release notes will be created.'
-
+        description: 'perform_release: when set then all artifacts will be published and the DRAFT of the release 
+          notes will be created.'
 
 jobs:
 
@@ -53,16 +52,11 @@ jobs:
       my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
 
     steps:
-      - name: Fast checkout git repo in order to get commit id for further checkouts
+      - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           fetch-depth: 1
           ref: ${{ inputs.checkout_ref }}
-
-      - name: Get commit id
-        id: getCommitId
-        run: |
-          echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
         if: ${{ inputs.perform_release }}
@@ -74,6 +68,11 @@ jobs:
             echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
           fi
 
+      - name: Get commit id
+        id: getCommitId
+        run: |
+          echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
@@ -83,17 +82,33 @@ jobs:
       matrix:
         include:
           - arch: linux/amd64/v2
-            id: linux-amd64-v2
+            id: linux-amd64
             goos: linux
             goarch: amd64
             docker_run_envs: -e CC=x86_64-linux-gnu-gcc -e CXX=x86_64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
             build_dst: src
+            build_docker_image: true
           - arch: linux/arm64
             id: linux-arm64
             goos: linux
             goarch: arm64
             docker_run_envs: -e CC=aarch64-linux-gnu-gcc -e CXX=aarch64-linux-gnu-g++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
             build_dst: src
+            build_docker_image: true
+          - arch: darwin/arm64
+            id: darwin-arm64
+            goos: darwin
+            goarch: arm64
+            docker_run_envs: -e CC=oa64-clang -e CXX=oa64-clang++ -e CGO_LDFLAGS="-s -w -extldflags '-static'"
+            build_dst: src
+            build_docker_image: false
+          - arch: darwin/amd64
+            id: darwin-amd64
+            goos: darwin
+            goarch: amd64
+            docker_run_envs: -e CC=o64-clang -e CXX=o64-clang++ -e CGO_LDFLAGS="-s -w"
+            build_dst: src
+            build_docker_image: false
 
     steps:
       - name: Checkout github repo
@@ -113,6 +128,7 @@ jobs:
         run: echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
+        if: ${{ matrix.build_docker_image }}
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
         with:
           username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
@@ -136,6 +152,7 @@ jobs:
 
       - name: Build ${{ inputs.perform_release && 'and push' || 'without pushing' }} a docker image for ${{ matrix.arch }} platform
         id: docker_build
+        if: ${{ matrix.build_docker_image }}
         uses: docker/build-push-action@16ebe778df0e7752d2cfcbd924afdbbd89c1a755 ## v6.6.1
         env:
           LOCAL_DOCKERHUB_REPOSITORY: ${{ inputs.perform_release && env.DOCKERHUB_REPOSITORY_PRD || env.DOCKERHUB_REPOSITORY_DEV }}
@@ -183,12 +200,14 @@ jobs:
           find . -ls
 
       - name: Export digest
+        if: ${{ matrix.build_docker_image }}
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.docker_build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"          
       
       - name: Upload digest
+        if: ${{ matrix.build_docker_image }}
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
         with:
           name: digests-${{ matrix.id }}
@@ -272,7 +291,7 @@ jobs:
           echo "DEBUG: end of content"
           ls -lao
 
-      - name: Create GIT Tag for the released version pointing to commit id ${{ needs.init.outputs.my_git_ref_id }}
+      - name: Create and push a git tag for the released version
         if: ${{ inputs.perform_release }}
         env:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',steps.GetShortCommitId.outputs.short_commit_id) }}
@@ -280,7 +299,7 @@ jobs:
         run: |
           git config --global user.email ${{ env.GITHUB_AUTOMATION_EMAIL }}
           git config --global user.name "${{ env.GITHUB_AUTOMATION_NAME }}"
-          git tag -a ${LOCAL_VERSION} ${{ needs.init.outputs.my_git_ref_id }} -m "Release ${LOCAL_VERSION}"
+          git tag -a ${LOCAL_VERSION} -m "Release ${LOCAL_VERSION}"
           git push origin ${LOCAL_VERSION}
 
       - name: Publish draft of the Release notes with assets
