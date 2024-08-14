@@ -5,7 +5,7 @@ env:
   APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
   TARGET_BASE_VERSION: "bookworm-20240722"
-  APP_REPO: "github.com/erigontech/erigon"
+  APP_REPO: "erigontech/erigon"
   BUILD_TAGS: "nosqlite,noboltdb,nosilkworm"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
