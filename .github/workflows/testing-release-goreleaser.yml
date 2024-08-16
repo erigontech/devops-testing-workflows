@@ -1,0 +1,80 @@
+name: Release
+run-name: "Testing release workflow"
+
+env:
+  APPLICATION: "erigon"
+  GOLANG_BUILDER_VERSION: "1.22-bookworm"
+  BUILDER_IMAGE: "goreleaser/goreleaser-cross:v1.21.9"
+  TARGET_BASE_VERSION: "bookworm-20240722"
+  APP_REPO: "erigontech/erigon"
+  DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
+  DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
+  GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
+  GITHUB_AUTOMATION_NAME: "Erigon Github Automation"
+
+on:
+  push:
+    branches-ignore:
+      - '**'
+    #branches:
+    #  - 'master'
+    #tags:
+      ## only trigger on release tags:
+      #- 'v*.*.*'
+      #- 'v*.*.*-*'
+  workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: true
+        type: string
+        default: 'feature/issue-7893'
+        description: 'The branch to checkout and build artifacts from. By default "main".'
+      release_version:
+        required: false
+        type: string
+        description: 'Release version number (Pattern - v#.#.# , f.e. v2.41.3 or v3.0.0 or v3.0.0-alpha1 for pre-releases)'
+      perform_release:
+        required: true
+        type: boolean
+        default: false
+        description: 'perform_release: when set then all artifacts will be published and the DRAFT of the release 
+          notes will be created.'
+
+jobs:
+
+  init:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    name: Init
+    outputs:
+      my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
+      my_short_commit_id: ${{ steps.getCommitId.outputs.short_commit_id }}
+
+    steps:
+      - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: ${{ env.APP_REPO }}
+          fetch-depth: 1
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
+        if: ${{ inputs.perform_release }}
+        run: |
+          if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
+            echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
+            exit 1
+          else
+            echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
+          fi
+
+      - name: Build binaries with goreleaser
+        run: |
+          docker run --rm \
+            -w /${{ env.APPLICATION }}/ \
+            -v $(pwd):/${{ env.APPLICATION}} \
+            ${{ env.BUILDER_IMAGE }} build --clean
+          echo "PWD:"
+          pwd
+          echo "DEBUG ls -lao"
+          ls -lao
