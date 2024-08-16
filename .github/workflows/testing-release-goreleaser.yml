@@ -73,7 +73,7 @@ jobs:
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
             -v $(pwd):/${{ env.APPLICATION}} \
-            ${{ env.BUILDER_IMAGE }} build --clean
+            ${{ env.BUILDER_IMAGE }} build --clean --skip=validate
           echo "PWD:"
           pwd
           echo "DEBUG ls -lao"
