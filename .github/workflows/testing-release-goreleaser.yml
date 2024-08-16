@@ -7,6 +7,7 @@ env:
   BUILDER_IMAGE: "goreleaser/goreleaser-cross:v1.21.9"
   TARGET_BASE_VERSION: "bookworm-20240722"
   APP_REPO: "erigontech/erigon"
+  PACKAGE: "github.com/erigontech/erigon"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
@@ -88,6 +89,7 @@ jobs:
             -e GIT_COMMIT=${{ github.sha }} \
             -e GIT_BRANCH=${{ github.ref_name }} \
             -e GIT_TAG="notdefined-tag" \
+            -e PACKAGE=${{ env.PACKAGE }} \
             -v $(pwd):/${{ env.APPLICATION}} \
             ${{ env.BUILDER_IMAGE }} release -p 4 --clean --skip=validate,announce,docker,publish
           echo "DEBUG ls -lao"
