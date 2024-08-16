@@ -74,6 +74,7 @@ jobs:
           df -h
           sudo rm -drf /usr/share/dotnet /usr/local/lib/android /usr/local/share/powershell /usr/share/swift
           docker images
+          docker rmi $(docker image ls --filter=reference='node:1' -q)
           echo "DEBUG: disk free after cleanup:"
           df -h
 
@@ -87,3 +88,13 @@ jobs:
           ls -lao
           echo "DEBUG ls -lao dist/"
           find dist/ -ls
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          path: |
+            ./dist/*.tar.gz
+            ./dist/*.zip
+          retention-days: 4
+          compression-level: 0
+          if-no-files-found: error 
