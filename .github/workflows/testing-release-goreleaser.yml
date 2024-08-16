@@ -12,6 +12,7 @@ env:
   DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
   GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
   GITHUB_AUTOMATION_NAME: "Erigon Github Automation"
+  LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
   push:
@@ -79,9 +80,18 @@ jobs:
           echo "DEBUG: disk free after cleanup:"
           df -h
 
+      - name: Login to Docker Hub
+        if: ${{ matrix.build_docker_image }}
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+
       - name: Build binaries with goreleaser
         env:
           BUILD_VERSION: ${{ inputs.release_version }}
+          DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
+          LABEL_DESCRIPTION: ${{ env.LABEL_DESCRIPTION }}
         run: |
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
@@ -90,8 +100,10 @@ jobs:
             -e GIT_BRANCH=${{ github.ref_name }} \
             -e GIT_TAG="notdefined-tag" \
             -e PACKAGE=${{ env.PACKAGE }} \
+            -e DOCKER_URL=${{ env.DOCKER_URL }} \
+            -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
-            ${{ env.BUILDER_IMAGE }} release -p 4 --clean --skip=validate,announce,docker,publish
+            ${{ env.BUILDER_IMAGE }} release -p 4 --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao"
           ls -lao
           echo "DEBUG ls -lao dist/"
