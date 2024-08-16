@@ -79,9 +79,15 @@ jobs:
           df -h
 
       - name: Build binaries with goreleaser
+        env:
+          BUILD_VERSION: ${{ inputs.release_version }}
         run: |
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
+            -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
+            -e GIT_COMMIT=${{ github.sha }} \
+            -e GIT_BRANCH=${{ github.ref_name }} \
+            -e GIT_TAG="notdefined-tag" \
             -v $(pwd):/${{ env.APPLICATION}} \
             ${{ env.BUILDER_IMAGE }} release -p 4 --clean --skip=validate,announce,docker,publish
           echo "DEBUG ls -lao"
