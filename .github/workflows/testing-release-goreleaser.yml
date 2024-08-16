@@ -1,5 +1,5 @@
-name: Release
-run-name: "Testing release workflow"
+name: Release-gr
+run-name: "Testing release workflow with goreleaser"
 
 env:
   APPLICATION: "erigon"
