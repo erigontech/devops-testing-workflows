@@ -82,8 +82,8 @@ jobs:
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
             -v $(pwd):/${{ env.APPLICATION}} \
-            ${{ env.BUILDER_IMAGE }} build -p 4 --clean --skip=validate
+            ${{ env.BUILDER_IMAGE }} release -p 4 --clean --skip=validate,announce,docker,publish
           echo "DEBUG ls -lao"
           ls -lao
           echo "DEBUG ls -lao dist/"
-          ls -lao dist/
+          find dist/ -ls
