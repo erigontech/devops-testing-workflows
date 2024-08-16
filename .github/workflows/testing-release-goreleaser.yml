@@ -74,7 +74,7 @@ jobs:
           df -h
           sudo rm -drf /usr/share/dotnet /usr/local/lib/android /usr/local/share/powershell /usr/share/swift
           docker images
-          docker rmi $(docker image ls --filter=reference='node:1' -q)
+          docker rmi $(docker image ls --filter=reference='node:1*' -q) || true
           echo "DEBUG: disk free after cleanup:"
           df -h
 
