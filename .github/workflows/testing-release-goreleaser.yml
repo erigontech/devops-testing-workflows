@@ -6,7 +6,7 @@ env:
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
   BUILDER_IMAGE_OLD: "goreleaser/goreleaser-cross:v1.21.9"
   BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.21.12"
-  TARGET_BASE_VERSION: "bookworm-20240722"
+  TARGET_BASE_VERSION: "bullseye-20240812"
   APP_REPO: "erigontech/erigon"
   PACKAGE: "github.com/erigontech/erigon"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
