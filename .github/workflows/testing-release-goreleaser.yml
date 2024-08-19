@@ -4,7 +4,8 @@ run-name: "Testing release workflow with goreleaser"
 env:
   APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
-  BUILDER_IMAGE: "goreleaser/goreleaser-cross:v1.21.9"
+  BUILDER_IMAGE_OLD: "goreleaser/goreleaser-cross:v1.21.9"
+  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.21.12"
   TARGET_BASE_VERSION: "bookworm-20240722"
   APP_REPO: "erigontech/erigon"
   PACKAGE: "github.com/erigontech/erigon"
@@ -110,7 +111,7 @@ jobs:
             -e LABEL_DESCRIPTION="${{ env.LABEL_DESCRIPTION }}" \
             -v $(pwd):/${{ env.APPLICATION}} \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ${{ env.BUILDER_IMAGE }} release -p 6 --clean --skip=validate,announce,publish
+            ${{ env.BUILDER_IMAGE }} release -p 2 --debug --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao"
           ls -lao
           echo "DEBUG ls -lao dist/"
@@ -134,3 +135,20 @@ jobs:
           retention-days: 4
           compression-level: 0
           if-no-files-found: error
+
+      - name: Publish draft of the Release notes with assets
+        if: ${{ inputs.perform_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
+          GITHUB_RELEASE_TARGET: main
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',needs.init.outputs.my_short_commit_id) }}
+        run: |
+          gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
+            --generate-notes \
+            --target ${GITHUB_RELEASE_TARGET} \
+            --draft=true \
+            --title "${{ inputs.release_version }}" \
+            --notes "**Improvements:**<br>- ...coming soon <br><br>**Bugfixes:**<br><br>- ...coming soon<br><br>**Docker images:**<br><br>Docker image released:<br> ${{ env.DOCKER_META_TAGS }}<br><br>... coming soon<br>"
+
