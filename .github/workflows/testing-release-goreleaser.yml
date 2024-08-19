@@ -98,8 +98,6 @@ jobs:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
           LABEL_DESCRIPTION: ${{ env.LABEL_DESCRIPTION }}
-          SKIP_DARWIN_AMD64: true
-          SKIP_DARWIN_ARM64: true
         run: |
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
@@ -109,8 +107,6 @@ jobs:
             -e GIT_TAG="notdefined-tag" \
             -e PACKAGE=${{ env.PACKAGE }} \
             -e DOCKER_URL=${{ env.DOCKER_URL }} \
-            -e SKIP_DARWIN_AMD64=${{ env.SKIP_DARWIN_AMD64 }} \
-            -e SKIP_DARWIN_ARM64=${{ env.SKIP_DARWIN_ARM64 }} \
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -e LABEL_DESCRIPTION="${{ env.LABEL_DESCRIPTION }}" \
             -v $(pwd):/${{ env.APPLICATION}} \
