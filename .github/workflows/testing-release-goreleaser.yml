@@ -47,7 +47,7 @@ jobs:
   build-release:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    name: Init
+    name: Build Release
     outputs:
       my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
       my_short_commit_id: ${{ steps.getCommitId.outputs.short_commit_id }}
