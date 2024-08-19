@@ -71,6 +71,12 @@ jobs:
             echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
           fi
 
+      - name: Get commit id
+        id: getCommitId
+        run: |
+          echo "id=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
+          echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Cleanup disk space
         run: |
           echo "DEBUG: disk free before cleanup:"
@@ -141,11 +147,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          DOCKER_META_TAGS: ${{ join(fromJSON(steps.meta.outputs.json).tags, ' ') }}
+          DOCKER_META_TAGS: ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}
           GITHUB_RELEASE_TARGET: main
-          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',needs.init.outputs.my_short_commit_id) }}
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',env.my_short_commit_id) }}
         run: |
-          gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
+          cd dist
+          gh release create ${LOCAL_VERSION} *.tar.gz *.zip *_checksums.txt \
             --generate-notes \
             --target ${GITHUB_RELEASE_TARGET} \
             --draft=true \
