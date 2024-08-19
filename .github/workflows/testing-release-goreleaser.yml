@@ -121,7 +121,7 @@ jobs:
         run: |
           docker image push ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}-arm64
           docker image push ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}-amd64
-          docker buildx imagetools create ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }} \
+          docker buildx imagetools create --tag ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }} \
             ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}-arm64 \
             ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}-amd64
 
