@@ -117,7 +117,7 @@ jobs:
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ${{ env.BUILDER_IMAGE }} build --debug --clean --skip=validate
+            ${{ env.BUILDER_IMAGE }} release --debug --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao"
           ls -lao
           echo "DEBUG ls -lao dist/"
