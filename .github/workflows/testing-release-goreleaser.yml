@@ -30,7 +30,7 @@ on:
       checkout_ref:
         required: true
         type: string
-        default: 'feature/issue-7893'
+        default: 'feature/issue-7893-2'
         description: 'The branch to checkout and build artifacts from. By default "main".'
       release_version:
         required: false
