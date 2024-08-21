@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           repository: ${{ env.APP_REPO }}
-          fetch-depth: 1
+          fetch-depth: 0
           ref: ${{ inputs.checkout_ref }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
@@ -79,6 +79,7 @@ jobs:
           echo "short_commit_id=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
       - name: Cleanup disk space
+        if: github.repository == 'want to skip this step, it is slow on big runners'
         run: |
           echo "DEBUG: disk free before cleanup:"
           df -h
