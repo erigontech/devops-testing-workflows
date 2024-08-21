@@ -35,7 +35,7 @@ on:
       release_version:
         required: false
         type: string
-        description: 'Release version number (Pattern - v#.#.# , f.e. v2.41.3 or v3.0.0 or v3.0.0-alpha1 for pre-releases)'
+        description: 'Release version number (Pattern - #.#.# , f.e. 2.41.3 or 3.0.0 or 3.0.0-alpha1 for pre-releases. Do not prefix it with "v" - it will be added automatically by the workflow.)'
       perform_release:
         required: true
         type: boolean
@@ -47,7 +47,7 @@ jobs:
 
   build-release:
     ## runs-on: ubuntu-22.04
-    runs-on: ubuntu-latest-devops-xlarge
+    runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 60
     name: Build Release
     outputs:
@@ -59,17 +59,17 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           repository: ${{ env.APP_REPO }}
-          fetch-depth: 0
+          fetch-depth: 1
           ref: ${{ inputs.checkout_ref }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists. Exit workflow if tag already exist.
         if: ${{ inputs.perform_release }}
         run: |
-          if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
-            echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
+          if git ls-remote --exit-code --quiet --tags origin 'v${{ inputs.release_version }}'; then
+            echo "ERROR: tag v${{ inputs.release_version }} exists and workflow is performing release. Exit."
             exit 1
           else
-            echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
+            echo "OK: tag v${{ inputs.release_version }} does not exists. Proceeding."
           fi
 
       - name: Get commit id
@@ -119,13 +119,13 @@ jobs:
             -v $(pwd):/${{ env.APPLICATION}} \
             -v /var/run/docker.sock:/var/run/docker.sock \
             ${{ env.BUILDER_IMAGE }} release --debug --clean --skip=validate,announce,publish
-          echo "DEBUG ls -lao"
+          echo "DEBUG ls -lao in the working directory"
           ls -lao
-          echo "DEBUG ls -lao dist/"
+          echo "DEBUG content of the dist/ directory"
           find dist/ -ls
-          docker images
 
-      - name: Build docker images and
+      - name: Build and push docker images and manifest in case perform_release is set
+        if: ${{ inputs.perform_release }}
         env:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
@@ -140,23 +140,68 @@ jobs:
           --push \
           --platform linux/amd64,linux/arm64 .
 
-      - name: Upload Artifacts
+      - name: Upload artifact -- linux/arm64
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
         with:
-          path: |
-            ./dist/*.tar.gz
-            ./dist/*.zip
-          retention-days: 4
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          retention-days: 1
           compression-level: 0
           if-no-files-found: error
 
-      - name: Publish draft of the Release notes with assets
+      - name: Upload artifact -- linux/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- darwin/arm64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- darwin/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- windows/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- checksum
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Publish draft of the Release notes with assets in case perform_release is set
         if: ${{ inputs.perform_release }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           DOCKER_META_TAGS: ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}
           GITHUB_RELEASE_TARGET: main
+          GITHUB_RELEASE_TARGET_CORRECT: ${{ inputs.checkout_ref }}
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',env.my_short_commit_id) }}
         run: |
           cd dist
