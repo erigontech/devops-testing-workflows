@@ -160,7 +160,7 @@ jobs:
           LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',env.my_short_commit_id) }}
         run: |
           cd dist
-          gh release create ${LOCAL_VERSION} *.tar.gz *_checksums.txt \
+          gh release create ${LOCAL_VERSION} *.tar.gz *.zip *_checksums.txt \
             --generate-notes \
             --target ${GITHUB_RELEASE_TARGET} \
             --draft=true \
