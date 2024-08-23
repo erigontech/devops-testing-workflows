@@ -135,7 +135,7 @@ jobs:
           --label org.opencontainers.image.revision=${{ github.sha }} \
           --label org.opencontainers.image.vendor="${{ github.repository_owner }}" \
           --label org.opencontainers.image.description="${{ env.LABEL_DESCRIPTION }}" \
-          --label org.opencontainers.image.base.digest="$(docker image inspect debian:${{env.TARGET_BASE_VERSION}} -f "{{ .RepoDigests}}")" \
+          --label org.opencontainers.image.base.name="debian:${{ env.TARGET_BASE_VERSION }}" \
           --push \
           --platform linux/amd64/v2,linux/arm64 .
 
