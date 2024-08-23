@@ -94,7 +94,6 @@ jobs:
         env:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
-          LABEL_DESCRIPTION: ${{ env.LABEL_DESCRIPTION }}
         run: |
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
@@ -108,7 +107,7 @@ jobs:
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ${{ env.BUILDER_IMAGE }} release --debug --clean --skip=validate,announce,publish
+            ${{ env.BUILDER_IMAGE }} release --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao in the working directory"
           ls -lao
           echo "DEBUG content of the dist/ directory"
@@ -127,6 +126,16 @@ jobs:
           --build-arg VERSION=${{ env.BUILD_VERSION }} \
           --build-arg APPLICATION=${{ env.APPLICATION }} \
           --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
+          --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+          --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
+          --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.documentation="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.source="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.version=${{ inputs.release_version }} \
+          --label org.opencontainers.image.revision=${{ github.sha }} \
+          --label org.opencontainers.image.vendor="${{ github.repository_owner }}" \
+          --label org.opencontainers.image.description="${{ env.LABEL_DESCRIPTION }}" \
+          --label org.opencontainers.image.base.digest="$(docker image inspect debian:${{env.TARGET_BASE_VERSION}} -f "{{ .RepoDigests}}")" \
           --push \
           --platform linux/amd64/v2,linux/arm64 .
 
