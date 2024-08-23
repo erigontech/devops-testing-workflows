@@ -35,7 +35,7 @@ on:
       release_version:
         required: false
         type: string
-        description: 'Release version number (Pattern - #.#.# , f.e. 2.41.3 or 3.0.0 or 3.0.0-alpha1 for pre-releases. Do not prefix it with "v" - it will be added automatically by the workflow.)'
+        description: 'Release version number (Pattern - #.#.# , f.e. 2.41.3 or 3.0.0 or 3.0.0-alpha1 for pre-releases. Do not prefix it with "v".)'
       perform_release:
         required: true
         type: boolean
@@ -62,14 +62,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Check if tag v${{ inputs.release_version }} already exists in case perform_release is set.
+      - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
         if: ${{ inputs.perform_release }} && ${{ inputs.release_version }}
         run: |
-          if git ls-remote --exit-code --quiet --tags origin 'v${{ inputs.release_version }}'; then
-            echo "ERROR: tag v${{ inputs.release_version }} exists and workflow is performing release. Exit."
+          if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
+            echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
             exit 1
           else
-            echo "OK: tag v${{ inputs.release_version }} does not exists. Proceeding."
+            echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
           fi
 
       - name: Get commit id
@@ -128,7 +128,7 @@ jobs:
           --build-arg APPLICATION=${{ env.APPLICATION }} \
           --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
           --push \
-          --platform linux/amd64,linux/arm64 .
+          --platform linux/amd64/v2,linux/arm64 .
 
       - name: Upload artifact -- linux/arm64
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
