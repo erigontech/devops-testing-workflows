@@ -33,11 +33,11 @@ on:
         default: 'feature/issue-7893-2'
         description: 'The branch to checkout and build artifacts from. By default "main".'
       release_version:
-        required: false
+        required: true
         type: string
         description: 'Release version number (Pattern - #.#.# , f.e. 2.41.3 or 3.0.0 or 3.0.0-alpha1 for pre-releases. Do not prefix it with "v".)'
       perform_release:
-        required: true
+        required: false
         type: boolean
         default: false
         description: 'perform_release: when set then all artifacts will be published and the DRAFT of the release 
@@ -50,9 +50,6 @@ jobs:
     runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 60
     name: Build Release
-    outputs:
-      my_git_ref_id: ${{ steps.getCommitId.outputs.id }}
-      my_short_commit_id: ${{ steps.getCommitId.outputs.short_commit_id }}
 
     steps:
       - name: Checkout git repository ${{ env.APP_REPO }}
@@ -63,7 +60,7 @@ jobs:
           ref: ${{ inputs.checkout_ref }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
-        if: ${{ inputs.perform_release }} && ${{ inputs.release_version }}
+        if: ${{ (inputs.perform_release) && (inputs.release_version != '') }}
         run: |
           if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
             echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
