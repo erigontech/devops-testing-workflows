@@ -98,9 +98,9 @@ jobs:
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
             -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
-            -e GIT_COMMIT=${{ github.sha }} \
-            -e GIT_BRANCH=${{ github.ref_name }} \
-            -e GIT_TAG="notdefined-tag" \
+            -e GIT_COMMIT=${{ steps.getCommitId.outputs.id }} \
+            -e GIT_BRANCH=${{ inputs.checkout_ref }} \
+            -e GIT_TAG=${{ inputs.release_version }} \
             -e PACKAGE=${{ env.PACKAGE }} \
             -e APPLICATION=${{ env.APPLICATION }} \
             -e DOCKER_URL=${{ env.DOCKER_URL }} \
