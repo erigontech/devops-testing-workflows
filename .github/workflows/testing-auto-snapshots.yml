@@ -33,6 +33,7 @@ jobs:
         with:
           repository: erigontech/devops-testing-workflows
           fetch-depth: 1
+          path: 'devops-testing-workflows'
 
       - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
@@ -40,11 +41,13 @@ jobs:
           repository: ${{ env.APP_REPO }}
           fetch-depth: 1
           ref: ${{ env.CHECKOUT_REF }}
+          path: 'erigon'
 
       - name: Debug current directory
         run: |
           pwd
           ls -l
+          ls -lao ..
 
       - name: Get commit id
         id: getCommitId
@@ -64,6 +67,7 @@ jobs:
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
           DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.snapshots
         run: |
+          cd erigon
           docker buildx build \
           --file ${{ env.DOCKERFILE_PATH }} \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
