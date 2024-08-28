@@ -50,7 +50,7 @@ jobs:
 
       - name: Build and push multiplatform docker images
         env:
-          BUILD_VERSION: "main-${{ steps.getCommitId.outputs.id }}
+          BUILD_VERSION: "main-${{ steps.getCommitId.outputs.id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
           DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.snapshots
         run: |
