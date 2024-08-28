@@ -40,6 +40,11 @@ jobs:
           repository: erigontech/devops-testing-workflows
           fetch-depth: 1
 
+      - name: Debug current directory
+        run: |
+          pwd
+          ls -l
+
       - name: Get commit id
         id: getCommitId
         run: |

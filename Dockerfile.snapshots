@@ -4,6 +4,9 @@ ARG BUILDER_IMAGE="golang:1.22-bookworm" \
 FROM ${BUILDER_IMAGE} AS builder
 
 COPY . /home/erigon
+
+RUN ls -l /home/erigon
+
 RUN cd /home/erigon && \
     make erigon integration rpcdaemon
 
