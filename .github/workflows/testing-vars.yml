@@ -1,5 +1,5 @@
-name: Publishing snapshot images
-run-name: "Publishing snapshot images "
+name: testing-vars
+run-name: "testing-vars"
 
 env:
   APPLICATION: "erigon"
