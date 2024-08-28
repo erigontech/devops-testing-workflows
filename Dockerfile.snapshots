@@ -1,0 +1,19 @@
+ARG BUILDER_IMAGE="golang:1.22-bookworm" \
+    TARGET_BASE_IMAGE="alpine:3.20.1"
+
+FROM ${BUILDER_IMAGE} AS builder
+
+COPY . /home/erigon
+RUN cd /home/erigon && \
+    make erigon integration rpcdaemon
+
+FROM ${TARGET_BASE_IMAGE}
+ARG USER=erigon \
+    GROUP=erigon
+
+RUN --mount=type=bind,from=builder,source=/home/erigon,target=/tmp/erigon \
+    apk add --no-cache ca-certificates tzdata && \
+    addgroup ${GROUP} && \
+    adduser -D -h /home/${USER} -G ${GROUP} ${USER} && \
+    install -d -o ${USER} -g ${GROUP} /home/${USER}/.local /home/${USER}/.local/share /home/${USER}/.local/share/erigon && \
+    install -o ${USER} -g ${GROUP} /tmp/erigon/build/bin/* /usr/local/bin/
