@@ -119,7 +119,7 @@ jobs:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
           DOCKERFILE_PATH: ./Dockerfile.NEW-gr2
-          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest ',env.DOCKER_URL) || '' }}
+          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest ',env.DOCKERHUB_REPOSITORY_DEV) || '' }}
         run: |
           docker buildx build \
           --file ${{ env.DOCKERFILE_PATH }} \
