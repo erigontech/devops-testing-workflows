@@ -1,0 +1,41 @@
+name: Publishing snapshot images
+run-name: "Publishing snapshot images "
+
+env:
+  APPLICATION: "erigon"
+  BUILDER_IMAGE: "golang:1.22-bookworm"
+  TARGET_BASE_IMAGE: "alpine:3.20.1"
+  APP_REPO: "erigontech/erigon"
+  CHECKOUT_REF: "main"
+  DOCKER_URL: "erigontech/dev22-erigon"
+  DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
+  LABEL_DESCRIPTION: "[docker image built on a last commit id from the main branch] Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
+
+on:
+  push:
+    branches:
+      - 'master'
+    #tags:
+      ## only trigger on release tags:
+      #- 'v*.*.*'
+      #- 'v*.*.*-*'
+  workflow_dispatch:
+
+jobs:
+
+  Build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+
+
+
+      - name: Debug current directory
+        env:
+          DOCKER_PUBLISH_LATEST_CONDITION: ${{ inputs.publish_latest_tag && '--tag $env.DOCKER_URL:latest' || 'nothing' }}
+        run: |
+          set
+          pwd
+          ls -l
+          ls -lao ..
