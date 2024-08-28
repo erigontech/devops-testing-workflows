@@ -27,18 +27,19 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
-        with:
-          repository: ${{ env.APP_REPO }}
-          fetch-depth: 1
-          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Fast checkout git repository devops-testing-workflows
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           repository: erigontech/devops-testing-workflows
           fetch-depth: 1
+
+      - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: ${{ env.APP_REPO }}
+          fetch-depth: 1
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Debug current directory
         run: |
