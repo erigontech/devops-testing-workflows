@@ -33,7 +33,7 @@ jobs:
 
       - name: Debug current directory
         env:
-          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'false' || '--tag $env.DOCKER_URL:latest' && 'nothing' }}
+          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'false' && '--tag $env.DOCKER_URL:latest' || 'nothing' }}
         run: |
           set
           pwd
