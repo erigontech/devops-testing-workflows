@@ -1,5 +1,5 @@
-name: Release
-run-name: "Running for short CommitID ${{ steps.getCommitId.outputs.short_commit_id }}"
+name: Publishing snapshot images
+run-name: "Publishing snapshot images "
 
 env:
   APPLICATION: "erigon"
