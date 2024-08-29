@@ -10,7 +10,7 @@ COPY . /home/erigon
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
     cd /home/erigon && \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH make erigon integration rpcdaemon
+    GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_LDFLAGS="-s -w -extldflags \"-static\"" make erigon integration rpcdaemon
 
 FROM ${TARGET_BASE_IMAGE}
 ARG USER=erigon \
@@ -22,3 +22,20 @@ RUN --mount=type=bind,from=builder,source=/home/erigon,target=/tmp/erigon \
     adduser -D -h /home/${USER} -G ${GROUP} ${USER} && \
     install -d -o ${USER} -g ${GROUP} /home/${USER}/.local /home/${USER}/.local/share /home/${USER}/.local/share/erigon && \
     install -o ${USER} -g ${GROUP} /tmp/erigon/build/bin/* /usr/local/bin/
+
+VOLUME [ "/home/${USER}" ]
+WORKDIR /home/${USER}
+
+USER ${USER}
+EXPOSE 8545 \
+       8551 \
+       8546 \
+       30303 \
+       30303/udp \
+       42069 \
+       42069/udp \
+       8080 \
+       9090 \
+       6060
+
+ENTRYPOINT [ "/usr/local/bin/erigon" ]
