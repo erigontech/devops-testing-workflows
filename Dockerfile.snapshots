@@ -9,6 +9,7 @@ COPY . /home/erigon
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
+    apk update && apk add make && \
     cd /home/erigon && \
     GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_LDFLAGS="-s -w -extldflags \"-static\"" make erigon integration rpcdaemon
 
