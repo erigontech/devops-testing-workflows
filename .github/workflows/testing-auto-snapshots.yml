@@ -3,7 +3,7 @@ run-name: "Publishing snapshot images "
 
 env:
   APPLICATION: "erigon"
-  BUILDER_IMAGE_OLD: "golang:1.22-bookworm"
+  #BUILDER_IMAGE: "golang:1.22-bookworm"
   BUILDER_IMAGE: "golang:1.21.13-alpine3.20"
   TARGET_BASE_IMAGE: "alpine:3.20.2"
   APP_REPO: "erigontech/erigon"
