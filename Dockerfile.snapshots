@@ -13,9 +13,7 @@ COPY . /home/erigon
 
 WORKDIR /home/erigon
 
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    apk update && \
+RUN apk update && \
     apk add make git gcc libstdc++ build-base linux-headers && \
     make erigon integration rpcdaemon
     
