@@ -9,9 +9,9 @@ COPY . /home/erigon
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
-    apk update && apk add make git && \
+    apk update && apk add make git gcc libstdc++ build-base linux-headers && \
     cd /home/erigon && \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_LDFLAGS="-s -w -extldflags \"-static\"" make erigon integration rpcdaemon
+    GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=1 CGO_LDFLAGS="-s -w" make erigon integration rpcdaemon
 
 FROM ${TARGET_BASE_IMAGE}
 ARG USER=erigon \
