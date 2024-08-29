@@ -14,7 +14,7 @@ COPY . /home/erigon
 WORKDIR /home/erigon
 
 RUN apk update && \
-    apk add make git gcc libstdc++ build-base linux-headers && \
+    apk add make git gcc libstdc++ build-base linux-headers bash && \
     make erigon integration rpcdaemon
     
 FROM ${TARGET_BASE_IMAGE}
