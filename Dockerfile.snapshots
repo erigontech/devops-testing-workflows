@@ -1,12 +1,12 @@
 ARG BUILDER_IMAGE="golang:1.22-bookworm" \
-    TARGET_BASE_IMAGE="alpine:3.20.1"
+    TARGET_BASE_IMAGE="alpine:3.20.1" \
+    TARGETOS TARGETARCH
 
 FROM ${BUILDER_IMAGE} AS builder
 
 
 ENV GOOS=$TARGETOS \
     GOARCH=$TARGETARCH \
-    CGO_LDFLAGS="-s -w" \
     BUILD_TAGS=nosqlite,noboltdb,nosilkworm
 
 COPY . /home/erigon
