@@ -9,11 +9,18 @@ COPY . /home/erigon
 
 WORKDIR /home/erigon
 
+ENV GOOS=$GOOS \
+    GOARCH=$GOARCH \
+    CGO_ENABLED=1 \
+    CGO_LDFLAGS="-s -w" \
+    BUILD_TAGS=nosqlite,noboltdb,nosilkworm
+
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
-    apk update && apk add make git gcc libstdc++ build-base linux-headers && \
-    GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=1 CGO_LDFLAGS="-s -w" make erigon integration rpcdaemon
-
+    apk update && \
+    apk add make git gcc libstdc++ build-base linux-headers && \
+    make erigon integration rpcdaemon
+    
 FROM ${TARGET_BASE_IMAGE}
 ARG USER=erigon \
     GROUP=erigon
