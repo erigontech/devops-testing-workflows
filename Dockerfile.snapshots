@@ -6,15 +6,16 @@ FROM ${BUILDER_IMAGE} AS builder
 
 
 ENV GOOS=$TARGETOS \
-    GOARCH=$TARGETARCH \
-    BUILD_TAGS=nosqlite,noboltdb,nosilkworm
+    GOARCH=$TARGETARCH
 
 COPY . /home/erigon
 
 WORKDIR /home/erigon
 
-RUN apk update && \
-    apk add make git gcc libstdc++ build-base linux-headers bash && \
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    apk update && \
+    apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates && \
     make erigon integration rpcdaemon
     
 FROM ${TARGET_BASE_IMAGE}
