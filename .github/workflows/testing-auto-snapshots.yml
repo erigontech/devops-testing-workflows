@@ -79,6 +79,7 @@ jobs:
           cd erigon
           docker buildx build \
           --file ${{ env.DOCKERFILE_PATH }} \
+          --target ci-cd-main-branch \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
           --build-arg BUILDER_IMAGE=${{ env.BUILDER_IMAGE }} \
           --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
