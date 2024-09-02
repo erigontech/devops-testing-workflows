@@ -1,9 +1,8 @@
-FROM alpine:3.5 as something1
-RUN mkdir -p /tmp/tmp/tmp
-
-
 ARG BUILDER_IMAGE="golang:1.22-bookworm" \
     TARGET_BASE_IMAGE="alpine:3.20.1"
+
+FROM alpine:3.5 AS something1
+RUN mkdir -p /tmp/tmp/tmp
 
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -52,5 +51,5 @@ ENTRYPOINT [ "/usr/local/bin/erigon" ]
 
 
 
-FROM alpine:3.6 as something2
+FROM alpine:3.6 AS something2
 RUN mkdir -p /tmp/tmp2/tmp2
