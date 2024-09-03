@@ -1,5 +1,15 @@
 ARG BUILDER_IMAGE="golang:1.22-bookworm" \
-    TARGET_BASE_IMAGE="alpine:3.20.1"
+    TARGET_BASE_IMAGE="alpine:3.20.1" \
+    EXPOSED_PORTS="8545 \
+       8551 \
+       8546 \
+       30303 \
+       30303/udp \
+       42069 \
+       42069/udp \
+       8080 \
+       9090 \
+       6060"
 
 FROM alpine:3.5 AS something1
 RUN mkdir -p /tmp/tmp/tmp
@@ -36,16 +46,7 @@ VOLUME [ "/home/${USER}" ]
 WORKDIR /home/${USER}
 
 USER ${USER}
-EXPOSE 8545 \
-       8551 \
-       8546 \
-       30303 \
-       30303/udp \
-       42069 \
-       42069/udp \
-       8080 \
-       9090 \
-       6060
+EXPOSE ${EXPOSED_PORTS}
 
 ENTRYPOINT [ "/usr/local/bin/erigon" ]
 
