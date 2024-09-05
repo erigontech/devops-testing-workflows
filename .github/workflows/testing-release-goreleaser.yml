@@ -1,5 +1,5 @@
 name: Release-gr
-run-name: "Testing release workflow with goreleaser"
+run-name: "Testing release workflow with goreleaser WITH CACHE"
 
 env:
   APPLICATION: "erigon"
@@ -59,6 +59,13 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.checkout_ref }}
 
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: ./local-erigon-go-cache
+          key: ${{ runner.os }}-erigon-go-build-cache
+
       - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
         if: ${{ (inputs.perform_release) && (inputs.release_version != '') }}
         run: |
@@ -106,6 +113,7 @@ jobs:
             -e DOCKER_URL=${{ env.DOCKER_URL }} \
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
+            -v ./local-erigon-go-cache:/root/go \
             -v /var/run/docker.sock:/var/run/docker.sock \
             ${{ env.BUILDER_IMAGE }} release --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao in the working directory"
@@ -113,6 +121,16 @@ jobs:
           echo "DEBUG content of the dist/ directory"
           find dist/ -ls
 
+
+          
+      - name: Save build cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ./local-erigon-go-cache
+          key: ${{ runner.os }}-erigon-go-build-cache
+
+            
       - name: Build and push multiplatform docker images (${{ env.BUILD_VERSION }} and latest) in case perform_release is true
         if: ${{ inputs.perform_release }}
         env:
