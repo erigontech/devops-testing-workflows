@@ -55,12 +55,14 @@ jobs:
     steps:
       - name: Cleanup space
         run: |
-          rm -drf /usr/share/dotnet
+          df -h
+          rm -drf /usr/share/dotnet /usr/local/julia1.10.5 /usr/share/miniconda /usr/share/swift
           echo DEBUG disk usage for some existing directories
-          du -sh /usr/share/* /usr/local/* /usr/local/lib/* /opt/*
+          du -sh /usr/share/* /usr/local/* /usr/local/lib/* /opt/* /opt/hostedtoolcache/*
           echo DEBUG list of docker images
           docker image ls
-          exit
+          docker image rm $(docker image ls --filter=reference='node:1*' -q)
+          df -h
 
       - name: Checkout git repository ${{ env.APP_REPO }}
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
