@@ -62,7 +62,7 @@ jobs:
             /usr/local/julia* \
             /opt/google/chrome \
             /opt/microsoft/msedge \
-            /opt/microsoft/powershell
+            /opt/microsoft/powershell \
             /usr/lib/mono \
             /usr/local/lib/android \
             /usr/local/share/chromium 
