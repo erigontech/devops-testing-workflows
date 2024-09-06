@@ -1,5 +1,5 @@
 name: Release-gr
-run-name: "Testing release workflow with goreleaser WITH CACHE"
+run-name: "Testing release workflow with goreleaser WITHOUT CACHE"
 
 env:
   APPLICATION: "erigon"
@@ -46,8 +46,8 @@ on:
 jobs:
 
   build-release:
-    ## runs-on: ubuntu-22.04
-    runs-on: ubuntu-latest-devops-xxlarge
+    runs-on: ubuntu-22.04
+    ##runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 60
     name: Build Release
 
@@ -59,12 +59,12 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v3
-        with:
-          path: ./local-erigon-go-cache
-          key: ${{ runner.os }}-erigon-go-build-cache
+      #- name: Cache node modules
+      #  id: cache-npm
+      #  uses: actions/cache@v3
+      #  with:
+      #    path: ./local-erigon-go-cache
+      #    key: go-build-cache-erigon-${{ runner.os }}-${{ runner.arch }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
         if: ${{ (inputs.perform_release) && (inputs.release_version != '') }}
