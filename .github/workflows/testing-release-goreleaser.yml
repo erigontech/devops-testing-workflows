@@ -123,12 +123,12 @@ jobs:
 
 
           
-      - name: Save build cache
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ./local-erigon-go-cache
-          key: ${{ runner.os }}-erigon-go-build-cache
+#      - name: Save build cache
+#        uses: actions/cache/save@v4
+#        with:
+#          path: |
+#            ./local-erigon-go-cache
+#          key: ${{ runner.os }}-erigon-go-build-cache
 
             
       - name: Build and push multiplatform docker images (${{ env.BUILD_VERSION }} and latest) in case perform_release is true
