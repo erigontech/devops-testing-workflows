@@ -53,6 +53,15 @@ jobs:
     name: Build Release
 
     steps:
+      - name: Cleanup space
+        run: |
+          rm -drf /usr/share/dotnet
+          echo DEBUG disk usage for some existing directories
+          du -sh /usr/share/* /usr/local/* /usr/local/lib/* /opt/*
+          echo DEBUG list of docker images
+          docker image ls
+          exit
+
       - name: Checkout git repository ${{ env.APP_REPO }}
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
