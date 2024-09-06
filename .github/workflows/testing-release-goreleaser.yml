@@ -56,12 +56,19 @@ jobs:
       - name: Cleanup space
         run: |
           df -h
-          rm -drf /usr/share/dotnet /usr/local/julia1.10.5 /usr/share/miniconda /usr/share/swift
-          echo DEBUG disk usage for some existing directories
-          du -sh /usr/share/* /usr/local/* /usr/local/lib/* /opt/* /opt/hostedtoolcache/*
+          sudo rm -drf \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /usr/local/julia* \
+            /opt/google/chrome \
+            /opt/microsoft/msedge \
+            /opt/microsoft/powershell
+            /usr/lib/mono \
+            /usr/local/lib/android \
+            /usr/local/share/chromium 
           echo DEBUG list of docker images
           docker image ls
-          docker image rm $(docker image ls --filter=reference='node:1*' -q)
+          sudo docker image rm $(docker image ls --filter=reference='node:1*' -q)
           df -h
 
       - name: Checkout git repository ${{ env.APP_REPO }}
