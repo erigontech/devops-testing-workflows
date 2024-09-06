@@ -60,9 +60,11 @@ jobs:
           ref: ${{ inputs.checkout_ref }}
 
       - name: Cache for go-build-cache-erigon-${{ runner.os }}-${{ runner.arch }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ./local-erigon-go-cache
+          path: |
+            ./local-erigon-go
+            ./local-erigon-go-cache
           key: go-build-cache-erigon-${{ runner.os }}-${{ runner.arch }}
 
       - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
@@ -112,7 +114,8 @@ jobs:
             -e DOCKER_URL=${{ env.DOCKER_URL }} \
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
-            -v ./local-erigon-go-cache:/root/go \
+            -v ./local-erigon-go:/root/go \
+            -v ./local-erigon-go-cache:/root/.cache \
             -v /var/run/docker.sock:/var/run/docker.sock \
             ${{ env.BUILDER_IMAGE }} release --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao in the working directory"
