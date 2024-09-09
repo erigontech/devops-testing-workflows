@@ -74,7 +74,7 @@ jobs:
 
       - name: build arm64
         run: |
-          docker run  --platform linux/arm64 --rm -v $(pwd):/erigon:ro \
+          docker run  --platform linux/arm64 --rm -v $(pwd)/erigon:/erigon:ro \
           -v build-arm64:/erigon-build \
           -v local-cache-erigon-go-build:/root/.cache/go-build \
           -v local-cache-erigon-go-pkg:/go/pkg \
@@ -85,7 +85,7 @@ jobs:
 
       - name: build amd64
         run: |
-          docker run  --platform linux/amd64 --rm -v $(pwd):/erigon:ro \
+          docker run  --platform linux/amd64 --rm -v $(pwd)/erigon:/erigon:ro \
           -v build-amd64:/erigon-build \
           -v local-cache-erigon-go-build:/root/.cache/go-build \
           -v local-cache-erigon-go-pkg:/go/pkg \
