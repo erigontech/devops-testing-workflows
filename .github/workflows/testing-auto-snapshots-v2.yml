@@ -74,14 +74,14 @@ jobs:
 
       - name: build amd64
         run: |
-        docker run  --platform linux/arm64 --rm -v $(pwd):/erigon:ro \
+          docker run  --platform linux/arm64 --rm -v $(pwd):/erigon:ro \
           -v build-arm64:/erigon-build \
           -v local-cache-erigon-go-build:/root/.cache/go-build \
           -v local-cache-erigon-go-pkg:/go/pkg \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
           -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
-        ls -l build-arm64
+          ls -l build-arm64
 
 
       - name: Build and push multiplatform docker images
