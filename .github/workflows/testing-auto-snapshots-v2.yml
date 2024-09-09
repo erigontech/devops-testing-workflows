@@ -55,6 +55,7 @@ jobs:
       - name: Get commit id
         id: getCommitId
         run: |
+          mkdir build-arm64 build-amd64
           cd erigon
           echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
@@ -80,7 +81,7 @@ jobs:
           -v local-cache-erigon-go-pkg:/go/pkg \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
-          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
+          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOARCH=ARM64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
           ls -l build-arm64
 
       - name: build amd64
@@ -91,7 +92,7 @@ jobs:
           -v local-cache-erigon-go-pkg:/go/pkg \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
-          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
+          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOARCH=AMD64v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
 
       - name: Content of build directories
         run: |
