@@ -85,7 +85,7 @@ jobs:
           --build-arg BUILDER_IMAGE=${{ env.BUILDER_IMAGE }} \
           --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
           --tag ${{ env.DOCKER_URL }}:main-latest \
-          --attest type=provenance,mode=min \
+          --attest type=provenance,mode=max \
           --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
           --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
           --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
