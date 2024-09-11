@@ -106,7 +106,7 @@ jobs:
           ls -lao ../
 
       - name: Build and push multiplatform docker images
-        if: 3 > 4
+        #if: 3 > 4
         env:
           BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
