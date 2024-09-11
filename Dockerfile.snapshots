@@ -21,9 +21,9 @@ RUN mkdir -p /tmp/tmp/tmp
 FROM ${BUILDER_IMAGE} AS builder
 COPY /build-amd64 /build-arm64 /build/
 
-RUN echo "content of build-amd64:" && find /build/build-amd64 -ls && \
+RUN echo "content of build-amd64:" && ls -l /build/build-amd64 && \
     echo && \
-    echo "content of build-arm64:" && find /build/build-arm64 -ls
+    echo "content of build-arm64:" && ls -l /build/build-arm64
 
 FROM ${BUILDER_IMAGE} AS builder_old
 
