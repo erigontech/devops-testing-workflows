@@ -44,7 +44,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM ${TARGET_BASE_IMAGE} AS ci-cd-main-branch
 ARG USER=erigon \
-    GROUP=erigon
+    GROUP=erigon \
+    GOARCH
 
 RUN --mount=type=bind,from=builder,source=/build-${GOARCH},target=/tmp/erigon \
     apk add --no-cache ca-certificates tzdata libstdc++ && \
