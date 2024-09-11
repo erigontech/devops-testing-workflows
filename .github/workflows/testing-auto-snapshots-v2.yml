@@ -75,7 +75,7 @@ jobs:
         run: |
           docker run --platform linux/arm64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
-          -v build-arm64:/erigon-build \
+          -v $(pwd)/build-arm64:/erigon-build \
           -v ${HOME}/.cache/go-build:/root/.cache/go-build \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
@@ -86,7 +86,7 @@ jobs:
         run: |
           docker run --platform linux/amd64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
-          -v build-amd64:/erigon-build \
+          -v $(pwd)/build-amd64:/erigon-build \
           -v ${HOME}/.cache/go-build:/root/.cache/go-build \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
@@ -96,11 +96,14 @@ jobs:
       - name: Content of build directories
         run: |
           echo "Content of build-amd64:"
-          ls -l build-amd64
+          ls -l $(pwd)/build-amd64
           echo "--- end ---"
           echo "Content of build-arm64:"
-          ls -l build-arm64
+          ls -l $(pwd)/build-arm64
           echo "--- end ---"
+          ls -lao
+          echo "Content of ../"
+          ls -lao ../
 
       - name: Build and push multiplatform docker images
         if: 3 > 4
