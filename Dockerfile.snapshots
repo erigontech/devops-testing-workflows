@@ -19,9 +19,9 @@ FROM ${BUILDER_IMAGE} AS builder
 COPY /build-amd64 /build-amd64/
 COPY /build-arm64 /build-arm64/
 
-RUN echo "content of build-amd64:" && ls -l /build/build-amd64 && \
+RUN echo "content of build-amd64:" && ls -l /build-amd64 && \
     echo && \
-    echo "content of build-arm64:" && ls -l /build/build-arm64
+    echo "content of build-arm64:" && ls -l /build-arm64
 
 FROM ${BUILDER_IMAGE} AS builder_old
 
