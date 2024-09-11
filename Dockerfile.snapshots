@@ -14,12 +14,20 @@ ARG BUILDER_IMAGE="golang:1.22-bookworm" \
 FROM alpine:3.5 AS something1
 RUN mkdir -p /tmp/tmp/tmp
 
+
 FROM ${BUILDER_IMAGE} AS builder
+COPY build-amd64 /build/
+COPY build-arm64 /build/
+
+RUN echo "content of build-amd64:" && find build-amd64 -ls && \
+    echo "content of build-arm64:" && find build-arm64 -ls
+
+FROM ${BUILDER_IMAGE} AS builder_old
 
 ARG TARGETOS TARGETARCH
 
 ENV GOOS=$TARGETOS \
-    GOARCH=$TARGETARCH
+    GOARCH=$TARGETARCH 
 
 COPY . /home/erigon
 
@@ -30,12 +38,14 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     apk update && \
     apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates && \
     make BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon
-    
+
+
+
 FROM ${TARGET_BASE_IMAGE} AS ci-cd-main-branch
 ARG USER=erigon \
     GROUP=erigon
 
-RUN --mount=type=bind,from=builder,source=/home/erigon,target=/tmp/erigon \
+RUN --mount=type=bind,from=builder,source=/build/build-${GOARCH},target=/tmp/erigon \
     apk add --no-cache ca-certificates tzdata libstdc++ && \
     addgroup ${GROUP} && \
     adduser -D -h /home/${USER} -G ${GROUP} ${USER} && \
@@ -50,7 +60,3 @@ EXPOSE ${EXPOSED_PORTS}
 
 ENTRYPOINT [ "/usr/local/bin/erigon" ]
 
-
-
-FROM alpine:3.6 AS something2
-RUN mkdir -p /tmp/tmp2/tmp2

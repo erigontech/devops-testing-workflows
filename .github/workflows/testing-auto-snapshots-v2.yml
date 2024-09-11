@@ -76,7 +76,7 @@ jobs:
           docker run --platform linux/arm64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
           -v $(pwd)/build-arm64:/erigon-build \
-          -v ${HOME}/.cache/go-build:/root/.cache/go-build \
+          -v ${HOME}/.cache/go-build/arm64:/root/.cache/go-build \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
@@ -87,7 +87,7 @@ jobs:
           docker run --platform linux/amd64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
           -v $(pwd)/build-amd64:/erigon-build \
-          -v ${HOME}/.cache/go-build:/root/.cache/go-build \
+          -v ${HOME}/.cache/go-build/amd64:/root/.cache/go-build \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
@@ -106,9 +106,9 @@ jobs:
           ls -lao ../
 
       - name: Build and push multiplatform docker images
-        if: 3 > 4
+        #if: 3 > 4
         env:
-          BUILD_VERSION: "main-${{ steps.getCommitId.outputs.id }}"
+          BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
           DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.snapshots
         run: |
@@ -131,7 +131,5 @@ jobs:
           --label org.opencontainers.image.vendor="${{ github.repository_owner }}" \
           --label org.opencontainers.image.description="${{ env.LABEL_DESCRIPTION }}" \
           --label org.opencontainers.image.base.name="${{ env.TARGET_BASE_IMAGE }}" \
-          --cache-from=type=registry,ref=erigontech/build-cache-01 \
-          --cache-to=type=registry,ref=erigontech/build-cache-01 \
           --push \
           --platform linux/amd64,linux/arm64 .
