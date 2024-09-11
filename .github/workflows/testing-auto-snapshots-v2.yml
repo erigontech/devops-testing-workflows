@@ -111,6 +111,7 @@ jobs:
           BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
           DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.snapshots
+          PWD: $(pwd)
         run: |
           cd erigon
           docker buildx build \
