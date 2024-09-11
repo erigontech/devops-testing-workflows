@@ -45,11 +45,20 @@ jobs:
           ref: ${{ env.CHECKOUT_REF }}
           path: 'erigon'
 
+      - name: Setup go (cache, etc)
+        uses: actions/setup-go@v5
+        with:
+          cache-dependency-path: |
+            erigon/go.sum
+   
       - name: Debug current directory
         run: |
+          set
+          export
           pwd
           ls -l
           ls -lao ..
+          exit 1
 
       - name: Get commit id
         id: getCommitId
