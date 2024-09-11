@@ -44,13 +44,11 @@ jobs:
           ref: ${{ env.CHECKOUT_REF }}
           path: 'erigon'
 
-      - name: Cache for go-build-cache-erigon-ci-cd
-        uses: actions/cache@v4
+      - name: Setup go (cache, etc)
+        uses: actions/setup-go@v5
         with:
-          path: |
-            local-cache-erigon-go-build
-            local-cache-erigon-go-pkg
-          key: go-build-cache-erigon-ci-cd
+          cache-dependency-path: |
+            erigon/go.sum
   
       - name: Get commit id
         id: getCommitId
@@ -75,21 +73,22 @@ jobs:
 
       - name: build arm64
         run: |
-          docker run  --platform linux/arm64 --rm -v $(pwd)/erigon:/erigon:ro \
+          docker run --platform linux/arm64 \
+          --rm -v $(pwd)/erigon:/erigon:ro \
           -v build-arm64:/erigon-build \
-          -v local-cache-erigon-go-build:/root/.cache/go-build \
-          -v local-cache-erigon-go-pkg:/go/pkg \
+          -v ${HOME}/.cache/go-build:/root/.cache/go-build \
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
           -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOARCH=arm64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
-          ls -l build-arm64
 
       - name: build amd64
         run: |
-          docker run  --platform linux/amd64 --rm -v $(pwd)/erigon:/erigon:ro \
+          docker run --platform linux/amd64 \
+          --rm -v $(pwd)/erigon:/erigon:ro \
           -v build-amd64:/erigon-build \
-          -v local-cache-erigon-go-build:/root/.cache/go-build \
-          -v local-cache-erigon-go-pkg:/go/pkg \
+          -v ${HOME}/.cache/go-build:/root/.cache/go-build \
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
           -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
