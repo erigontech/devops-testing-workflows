@@ -36,9 +36,12 @@ WORKDIR /home/erigon
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
+    if [ "x${GOARCH}" == "xamd64" ]; then export LOCAL_AMDFLAG="GOAMD64=v2"; fi && \
+    echo "List of env variables:" && \
+    set && \
     apk update && \
     apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates && \
-    make BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon
+    make ${LOCAL_AMDFLAG} BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon
 
 
 
