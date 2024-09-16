@@ -58,7 +58,6 @@ jobs:
           pwd
           ls -l
           ls -lao ..
-          exit 1
 
       - name: Get commit id
         id: getCommitId
