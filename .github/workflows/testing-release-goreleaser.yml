@@ -4,10 +4,9 @@ run-name: "Testing release workflow with goreleaser WITH CACHE"
 env:
   APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
-  BUILDER_IMAGE_OLD: "goreleaser/goreleaser-cross:v1.21.9"
   ## BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.21.13"
-  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.22.6"
-  TARGET_BASE_VERSION: "alpine:3.20.2"
+  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.22.7"
+  TARGET_BASE_VERSION: "alpine:3.20.3"
   APP_REPO: "erigontech/erigon"
   PACKAGE: "github.com/erigontech/erigon"
   DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
@@ -78,14 +77,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Cache for go-build-cache-erigon-${{ runner.os }}-${{ runner.arch }}
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./local-erigon-go
-            ./local-erigon-go-cache
-          key: go-build-cache-erigon-${{ runner.os }}-${{ runner.arch }}
-
       - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
         if: ${{ (inputs.perform_release) && (inputs.release_version != '') }}
         run: |
@@ -122,6 +113,7 @@ jobs:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
         run: |
+          mkdir -p local-erigon-go local-erigon-go-cache
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
             -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
@@ -141,6 +133,11 @@ jobs:
           ls -lao
           echo "DEBUG content of the dist/ directory"
           find dist/ -ls
+          echo "-- end --"
+          du -sh local-erigon*
+          find local-erigon-go -ls
+          echo "-- end ---"
+          find local-erigon-go-cache -ls
 
 
           
