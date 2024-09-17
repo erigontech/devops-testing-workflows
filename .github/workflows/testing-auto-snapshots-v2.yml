@@ -110,15 +110,19 @@ jobs:
           ls -lao
           echo "Content of ../"
           ls -lao ../
-          echo "DEBUG - content of ${HOME}/.cache/go-build/arm64 "
-          ls -l ${HOME}/.cache/go-build/arm64 || true
-          du -sh ${HOME}/.cache/go-build/arm64 || true
-          echo "DEBUG - content of ${HOME}/.cache/go-build/amd64 "
-          ls -l ${HOME}/.cache/go-build/amd64 || true
-          du -sh ${HOME}/.cache/go-build/amd64 || true     
+          tar cvf ${HOME}/archive.tar /home/runner/.cache
+
+      - name: Upload artifact -- windows/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: archive.tar.zip
+          path: ${HOME}/archive.tar
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: ignore
 
       - name: Build and push multiplatform docker images
-        #if: 3 > 4
+        if: 3 > 4
         env:
           BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
