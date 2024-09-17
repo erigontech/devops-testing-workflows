@@ -59,11 +59,9 @@ jobs:
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
           cd ..
           echo "DEBUG - content of ${HOME}/.cache/go-build/arm64 "
-          ls -l ${HOME}/.cache/go-build/arm64 || true
-          du -sh ${HOME}/.cache/go-build/arm64 || true
-          echo "DEBUG - content of ${HOME}/.cache/go-build/amd64 "
-          ls -l ${HOME}/.cache/go-build/amd64 || true
-          du -sh ${HOME}/.cache/go-build/amd64 || true         
+          ls -l /opt/hostedtoolcache/go/
+          find /opt/hostedtoolcache/go/ -ls
+          exit 2
 
       - name: Login to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
