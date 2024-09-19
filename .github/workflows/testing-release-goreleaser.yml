@@ -243,10 +243,10 @@ jobs:
         run: |
           cd dist
           echo DEBUG list of artifact files for release
-          sha256sum *.tar.gz > ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
-          ls -l *.tar.gz *.zip *_checksums.txt
+          sha256sum *.tar.gz > ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+          ls -l *.tar.gz *.zip ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
           echo DEBUG end of the list
-          gh release create ${LOCAL_VERSION} *.tar.gz *.zip *_checksums.txt \
+          gh release create ${LOCAL_VERSION} *.tar.gz *.zip ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt \
             --generate-notes \
             --target ${GITHUB_RELEASE_TARGET} \
             --draft=true \
