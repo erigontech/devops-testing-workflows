@@ -231,15 +231,6 @@ jobs:
           compression-level: 0
           if-no-files-found: error
 
-      - name: Upload artifact -- checksum
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
-        with:
-          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
-          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
-          retention-days: 1
-          compression-level: 0
-          if-no-files-found: error
-
       - name: Publish draft of the Release notes with assets in case perform_release is set
         if: ${{ inputs.perform_release }}
         env:
