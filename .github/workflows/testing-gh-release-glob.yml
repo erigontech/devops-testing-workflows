@@ -28,8 +28,8 @@ jobs:
             date > archive_${{ inputs.version }}_linux_arm64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_linux_amd64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_linux_amd64v2.tar.gz
-            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_arm64.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64v2.tar.gz
             chmod a=r *.tar.gz
             ls -l *.tar.gz
@@ -38,9 +38,15 @@ jobs:
           env:
             GH_TOKEN: ${{ github.token }}
           run: |
-            gh release create *.tar.gz \
-                --generate-notes \
-                --target main \
-                --draft=true \
-                --title "${{ inputs.version }}" \
-                --notes "Version ${{ inputs.version }} released"
+            gh release create \
+            --generate-notes \
+            --target main \
+            --draft=true \
+            --title "${{ inputs.version }}" \
+            --notes "Version ${{ inputs.version }} released" \
+            archive_${{ inputs.version }}_linux_arm64.tar.gz \
+            archive_${{ inputs.version }}_linux_amd64.tar.gz \
+            archive_${{ inputs.version }}_linux_amd64v2.tar.gz \
+            archive_${{ inputs.version }}_darwin_arm64.tar.gz \
+            archive_${{ inputs.version }}_darwin_amd64.tar.gz \
+            archive_${{ inputs.version }}_darwin_amd64v2.tar.gz 
