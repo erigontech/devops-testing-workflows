@@ -1,0 +1,37 @@
+name: Testing gh release create glob
+run-name: "gh release create"
+
+on:
+  workflow_dispatch:
+    inputs:
+        version:
+          required: true
+          type: string
+          default: '0.1.2'
+          description: 'Version'
+    
+jobs:  
+  testing-gh-release-create:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+  
+    steps:
+  
+        - name: Create test archives
+          run: |
+            date > archive_${{ inputs.version }}_linux_arm64.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_linux_amd64.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_linux_amd64v2.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_arm64.tar.gz
+            install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64v2.tar.gz
+            ls -l *.tar.gz
+
+        - name: Perform release
+          run: |
+            gh release create *.tar.gz \
+                --generate-notes \
+                --target main \
+                --draft=true \
+                --title "${{ inputs.version }}" \
+                --notes "Version ${{ inputs.version }} released"
