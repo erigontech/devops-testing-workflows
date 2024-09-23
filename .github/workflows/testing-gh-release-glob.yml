@@ -17,6 +17,12 @@ jobs:
   
     steps:
   
+        - name: Checkout git repository
+          uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+          with:
+            fetch-depth: 0
+            ref: 'main'
+
         - name: Create test archives
           run: |
             date > archive_${{ inputs.version }}_linux_arm64.tar.gz
