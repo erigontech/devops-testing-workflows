@@ -46,8 +46,8 @@ on:
 jobs:
 
   build-release:
-    #runs-on: ubuntu-22.04
-    runs-on: ubuntu-latest-devops-xxlarge
+    runs-on: ubuntu-24.04
+    #runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 60
     name: Build Release
 
