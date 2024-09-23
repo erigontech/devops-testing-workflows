@@ -31,6 +31,7 @@ jobs:
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_arm64.tar.gz
             install archive_${{ inputs.version }}_linux_arm64.tar.gz archive_${{ inputs.version }}_darwin_amd64v2.tar.gz
+            chmod a=r *.tar.gz
             ls -l *.tar.gz
 
         - name: Perform release
