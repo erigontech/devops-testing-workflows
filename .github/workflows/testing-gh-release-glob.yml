@@ -28,6 +28,8 @@ jobs:
             ls -l *.tar.gz
 
         - name: Perform release
+          env:
+            GH_TOKEN: ${{ github.token }}
           run: |
             gh release create *.tar.gz \
                 --generate-notes \
