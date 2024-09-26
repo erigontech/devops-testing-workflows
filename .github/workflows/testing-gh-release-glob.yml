@@ -49,4 +49,4 @@ jobs:
             archive_${{ inputs.version }}_linux_amd64v2.tar.gz \
             archive_${{ inputs.version }}_darwin_arm64.tar.gz \
             archive_${{ inputs.version }}_darwin_amd64.tar.gz \
-            archive_${{ inputs.version }}_darwin_amd64v2.tar.gzß
+            archive_${{ inputs.version }}_darwin_amd64v2.tar.gz
