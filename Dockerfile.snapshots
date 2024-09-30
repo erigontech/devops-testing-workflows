@@ -53,9 +53,11 @@ ARG USER=erigon \
     GOARCH
 
 RUN --mount=type=bind,from=builder,source=/build-${GOARCH},target=/tmp/erigon \
-    apk add --no-cache ca-certificates tzdata libstdc++ && \
     adduser --group ${GROUP} && \
     adduser --ingroup ${GROUP} --home /home/${USER} ${USER} && \
+    if [ "x${GOARCH}" == "xamd64" ]; then \
+        find /tmp/erigon -name libsilkworm_capi.so -exec install {} /lib/x86_64-linux-gnu/ ; \
+    fi && \
     install -d -o ${USER} -g ${GROUP} /home/${USER}/.local /home/${USER}/.local/share /home/${USER}/.local/share/erigon && \
     install -o ${USER} -g ${GROUP} /tmp/erigon/* /usr/local/bin/
 

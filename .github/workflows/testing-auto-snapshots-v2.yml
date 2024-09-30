@@ -95,7 +95,7 @@ jobs:
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
-          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon integration rpcdaemon; find / -name libsilkworm_capi.so"
+          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon integration rpcdaemon; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
 
       - name: Content of build directories
         run: |
@@ -108,19 +108,9 @@ jobs:
           ls -lao
           echo "Content of ../"
           ls -lao ../
-          tar cvf ${HOME}/archive.tar /home/runner/.cache /home/runner/go/pkg/mod
-
-      - name: Upload artifact test1
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
-        with:
-          name: archive.tar.zip
-          path: /home/runner/archive.tar
-          retention-days: 1
-          compression-level: 0
-          if-no-files-found: ignore
 
       - name: Build and push multiplatform docker images
-        if: 3 > 4
+        #if: 3 > 4
         env:
           BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
