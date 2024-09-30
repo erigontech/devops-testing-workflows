@@ -52,6 +52,8 @@ ARG USER=erigon \
     GROUP=erigon \
     GOARCH
 
+SHELL ["/bin/bash", "-c"]
+
 RUN --mount=type=bind,from=builder,source=/build-${GOARCH},target=/tmp/erigon \
     adduser --group ${GROUP} && \
     adduser --system --ingroup ${GROUP} --home /home/${USER} --shell /bin/bash ${USER} && \
