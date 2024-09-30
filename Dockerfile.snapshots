@@ -54,7 +54,7 @@ ARG USER=erigon \
 
 RUN --mount=type=bind,from=builder,source=/build-${GOARCH},target=/tmp/erigon \
     adduser --group ${GROUP} && \
-    adduser --ingroup ${GROUP} --home /home/${USER} ${USER} && \
+    adduser --system --ingroup ${GROUP} --home /home/${USER} --shell /bin/bash ${USER} && \
     if [ "x${GOARCH}" == "xamd64" ]; then \
         find /tmp/erigon -name libsilkworm_capi.so -exec install {} /lib/x86_64-linux-gnu/ ; \
     fi && \
