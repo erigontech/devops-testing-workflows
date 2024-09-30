@@ -4,8 +4,10 @@ run-name: "Publishing snapshot images "
 env:
   APPLICATION: "erigon"
   #BUILDER_IMAGE: "golang:1.22-bookworm"
-  BUILDER_IMAGE: "golang:1.22.7-alpine3.20"
-  TARGET_BASE_IMAGE: "alpine:3.20.3"
+  BUILDER_IMAGE: "golang:1.22-bookworm"
+  #BUILDER_IMAGE: "golang:1.22.7-alpine3.20"
+  #TARGET_BASE_IMAGE: "alpine:3.20.3"
+  TARGET_BASE_IMAGE: "debian:12.7"
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "main"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
@@ -93,7 +95,7 @@ jobs:
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/sh \
           ${{ env.BUILDER_IMAGE }} \
-          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
+          -c "apk update; apk add make git gcc libstdc++ build-base linux-headers bash ca-certificates; git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon integration rpcdaemon; find / -name libsilkworm_capi.so"
 
       - name: Content of build directories
         run: |
