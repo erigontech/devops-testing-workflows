@@ -71,8 +71,8 @@ jobs:
         with:
           key: cache-go-${{ steps.getCommitId.outputs.week_of_the_year }}-go.mod-hash:${{ hashFiles('erigon/go.mod') }}
           path: |
-            ${{ env.HOME }}/go/pkg
-            ${{ env.HOME }}/.cache
+            ~/go/pkg
+            ~/.cache
 
       - name: Login to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
