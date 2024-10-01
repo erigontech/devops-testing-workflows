@@ -52,6 +52,8 @@ ARG USER=erigon \
     GROUP=erigon \
     GOARCH
 
+STOPSIGNAL 2
+
 SHELL ["/bin/bash", "-c"]
 
 RUN --mount=type=bind,from=builder,source=/build-${GOARCH},target=/tmp/erigon \

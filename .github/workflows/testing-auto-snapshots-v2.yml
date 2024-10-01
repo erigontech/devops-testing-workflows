@@ -47,13 +47,14 @@ jobs:
           path: 'erigon'
 
       - name: Setup go (cache, etc)
+        if: 3 > 4
         uses: actions/setup-go@v5
         with:
           go-version: '>=1.22'
           go-version-file: 'erigon/go.mod'
           cache-dependency-path: |
             erigon/go.sum
-  
+
       - name: Get commit id
         id: getCommitId
         run: |
@@ -61,7 +62,17 @@ jobs:
           cd erigon
           echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+          echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
           cd ..
+
+      - name: Configure go build and pkg cache for one week only
+        id: cache
+        uses: actions/cache@v4
+        with:
+          key: cache-go-${{ steps.getCommitId.outputs.week_of_the_year }}-go.mod-hash:${{ hashFiles('erigon/go.mod') }}
+          path: |
+            ${HOME}/go/pkg
+            ${HOME}/.cache
 
       - name: Login to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
@@ -82,7 +93,7 @@ jobs:
           -v $(pwd)/build-arm64:/erigon-build \
           -v ${HOME}/.cache:/root/.cache \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
-          -w /erigon --entrypoint /bin/sh \
+          -w /erigon --entrypoint /bin/bash \
           ${{ env.BUILDER_IMAGE }} \
           -c "git config --global --add safe.directory /erigon; make GOARCH=arm64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon integration rpcdaemon"
 
@@ -91,9 +102,9 @@ jobs:
           docker run --platform linux/amd64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
           -v $(pwd)/build-amd64:/erigon-build \
-          -v ${HOME}/.cache/go-build/amd64:/root/.cache/go-build \
+          -v ${HOME}/.cache:/root/.cache \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
-          -w /erigon --entrypoint /bin/sh \
+          -w /erigon --entrypoint /bin/bash \
           ${{ env.BUILDER_IMAGE }} \
           -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon integration rpcdaemon; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
 
