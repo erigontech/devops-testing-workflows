@@ -1,5 +1,5 @@
-name: Publishing snapshot images
-run-name: "Publishing snapshot images "
+name: Testing Rel 2.60
+run-name: "Testing Rel 2.60"
 
 env:
   APPLICATION: "erigon"
@@ -124,11 +124,10 @@ jobs:
           cd erigon
           docker buildx build \
           --file ${{ env.DOCKERFILE_PATH }} \
-          --target ci-cd-main-branch \
+          --target release \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
           --build-arg BUILDER_IMAGE=${{ env.BUILDER_IMAGE }} \
-          --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
-          --tag ${{ env.DOCKER_URL }}:main-latest \
+          --tag ${{ env.DOCKER_URL }}:2.60 \
           --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
           --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
           --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
