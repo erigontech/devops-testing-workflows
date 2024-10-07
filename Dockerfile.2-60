@@ -1,0 +1,65 @@
+ARG BUILDER_IMAGE="golang:1.22-bookworm" \
+    TARGET_BASE_IMAGE="alpine:3.20.1" \
+    GOOS=$TARGETOS \
+    GOARCH=$TARGETARCH \
+    PWD=${PWD} \
+    EXPOSED_PORTS="8545 \
+       8551 \
+       8546 \
+       30303 \
+       30303/udp \
+       42069 \
+       42069/udp \
+       8080 \
+       9090 \
+       6060"
+
+
+FROM ${BUILDER_IMAGE} AS builder
+
+COPY /build-amd64 /build-amd64/
+COPY /build-arm64 /build-arm64/
+COPY /build-arm64-v2 /build-arm64-v2/
+
+RUN echo "content of build-amd64:" && ls -l /build-amd64 && \
+    echo && \
+    echo "content of build-amd64-v2:" && ls -l /build-amd64-v2 && \
+    echo && \
+    echo "content of build-arm64:" && ls -l /build-arm64
+
+
+FROM ${TARGET_BASE_IMAGE} AS release
+ARG USER=erigon \
+    GROUP=erigon \
+    TARGETOS \
+    TARGETVARIANT \
+    GOARCH
+
+STOPSIGNAL 2
+
+SHELL ["/bin/bash", "-c"]
+
+RUN --mount=type=bind,from=builder,source=/build-${GOARCH}-${TARGETVARIANT},target=/tmp/erigon \
+    echo Installing on ${TARGETOS} with variant ${TARGETVARIANT} && \
+    adduser --group ${GROUP} && \
+    adduser --system --ingroup ${GROUP} --home /home/${USER} --shell /bin/bash ${USER} && \
+    apt update -y && \
+    apt install -y --no-install-recommends ca-certificates && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    if [ "x${GOARCH}" == "xamd64" ]; then \
+        echo "Installing libsilkworm_capi.so library to /lib/x86_64-linux-gnu/ in case amd64 architecture:"; \
+        find /tmp/erigon -name libsilkworm_capi.so -type f | xargs -I % install -m a=r -v % /lib/x86_64-linux-gnu/; \
+        echo "Done." ; \
+    fi && \
+    install -d -o ${USER} -g ${GROUP} /home/${USER}/.local /home/${USER}/.local/share /home/${USER}/.local/share/erigon && \
+    install -v -o ${USER} -g ${GROUP} /tmp/erigon/erigon /tmp/erigon/integration /tmp/erigon/rpcdaemon /usr/local/bin/
+
+VOLUME [ "/home/${USER}" ]
+WORKDIR /home/${USER}
+
+USER ${USER}
+EXPOSE ${EXPOSED_PORTS}
+
+ENTRYPOINT [ "/usr/local/bin/erigon" ]
+

@@ -1,0 +1,144 @@
+name: Publishing snapshot images
+run-name: "Publishing snapshot images "
+
+env:
+  APPLICATION: "erigon"
+  BUILDER_IMAGE: "golang:1.22-bookworm"
+  TARGET_BASE_IMAGE: "debian:12.7"
+  APP_REPO: "erigontech/erigon"
+  CHECKOUT_REF: "release/2.60"
+  DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
+  LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  Build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+
+      - name: Fast checkout git repository devops-testing-workflows
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: erigontech/devops-testing-workflows
+          fetch-depth: 1
+          path: 'devops-testing-workflows'
+
+      - name: Fast checkout git repository in order to get commit id for further checkouts by this workflow
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: ${{ env.APP_REPO }}
+          fetch-depth: 1
+          ref: ${{ env.CHECKOUT_REF }}
+          path: 'erigon'
+
+      - name: Get commit id
+        id: getCommitId
+        run: |
+          mkdir build-arm64 build-amd64 build-amd64-v2
+          cd erigon
+          echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+          echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
+          cd ..
+
+      - name: Configure go build and pkg cache for one week only
+        id: cache
+        uses: actions/cache@v4
+        with:
+          key: cache-year-week-${{ steps.getCommitId.outputs.week_of_the_year }}-go.mod-hash:${{ hashFiles('erigon/go.mod') }}
+          path: |
+            ~/go/pkg
+            ~/.cache
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf ## v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db ## v3.6.1
+
+      - name: build arm64
+        run: |
+          docker run --platform linux/arm64 \
+          --rm -v $(pwd)/erigon:/erigon:ro \
+          -v $(pwd)/build-arm64:/erigon-build \
+          -v ${HOME}/.cache:/root/.cache \
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
+          -w /erigon --entrypoint /bin/bash \
+          ${{ env.BUILDER_IMAGE }} \
+          -c "git config --global --add safe.directory /erigon; make GOARCH=arm64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool"
+
+      - name: build amd64
+        run: |
+          docker run --platform linux/amd64 \
+          --rm -v $(pwd)/erigon:/erigon:ro \
+          -v $(pwd)/build-amd64:/erigon-build \
+          -v ${HOME}/.cache:/root/.cache \
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
+          -w /erigon --entrypoint /bin/bash \
+          ${{ env.BUILDER_IMAGE }} \
+          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v1 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
+
+      - name: build amd64v2
+        run: |
+          docker run --platform linux/amd64/v2 \
+          --rm -v $(pwd)/erigon:/erigon:ro \
+          -v $(pwd)/build-amd64-v2:/erigon-build \
+          -v ${HOME}/.cache:/root/.cache \
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
+          -w /erigon --entrypoint /bin/bash \
+          ${{ env.BUILDER_IMAGE }} \
+          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
+            
+      - name: Content of build directories
+        run: |
+          echo "Content of build-amd64:"
+          ls -l $(pwd)/build-amd64
+          echo "--- end ---"
+          echo "Content of build-arm64:"
+          ls -l $(pwd)/build-arm64
+          echo "--- end ---"
+          ls -lao
+          echo "Content of ../"
+          ls -lao ../
+
+      - name: Build and push multiplatform docker images
+        #if: 3 > 4
+        env:
+          BUILD_VERSION: "main-${{ steps.getCommitId.outputs.short_commit_id }}"
+          DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
+          DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.2-60
+        run: |
+          mv -v build-amd64 erigon/
+          mv -v build-arm64 erigon/
+          cd erigon
+          docker buildx build \
+          --file ${{ env.DOCKERFILE_PATH }} \
+          --target ci-cd-main-branch \
+          --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
+          --build-arg BUILDER_IMAGE=${{ env.BUILDER_IMAGE }} \
+          --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
+          --tag ${{ env.DOCKER_URL }}:main-latest \
+          --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+          --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
+          --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.documentation="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.source="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.version=${{ steps.getCommitId.outputs.id }} \
+          --label org.opencontainers.image.revision=${{ steps.getCommitId.outputs.id }} \
+          --label org.opencontainers.image.vcs-ref-short=${{ steps.getCommitId.outputs.short_commit_id }} \
+          --label org.opencontainers.image.vendor="${{ github.repository_owner }}" \
+          --label org.opencontainers.image.description="${{ env.LABEL_DESCRIPTION }}" \
+          --label org.opencontainers.image.base.name="${{ env.TARGET_BASE_IMAGE }}" \
+          --push \
+          --platform linux/amd64,linux/amd64/v2,linux/arm64 .
