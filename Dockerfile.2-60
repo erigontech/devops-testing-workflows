@@ -17,9 +17,9 @@ ARG BUILDER_IMAGE="golang:1.22-bookworm" \
 
 FROM ${BUILDER_IMAGE} AS builder
 
-COPY /build-amd64 /build-amd64/
 COPY /build-arm64 /build-arm64/
-COPY /build-arm64-v2 /build-arm64-v2/
+COPY /build-amd64 /build-amd64/
+COPY /build-amd64-v2 /build-amd64v2/
 
 RUN echo "content of build-amd64:" && ls -l /build-amd64 && \
     echo && \
@@ -39,7 +39,7 @@ STOPSIGNAL 2
 
 SHELL ["/bin/bash", "-c"]
 
-RUN --mount=type=bind,from=builder,source=/build-${GOARCH}-${TARGETVARIANT},target=/tmp/erigon \
+RUN --mount=type=bind,from=builder,source=/build-${GOARCH}${TARGETVARIANT},target=/tmp/erigon \
     echo Installing on ${TARGETOS} with variant ${TARGETVARIANT} && \
     adduser --group ${GROUP} && \
     adduser --system --ingroup ${GROUP} --home /home/${USER} --shell /bin/bash ${USER} && \
