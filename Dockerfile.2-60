@@ -23,7 +23,7 @@ COPY /build-amd64v2 /build-amd64v2/
 
 RUN echo "content of build-amd64:" && ls -l /build-amd64 && \
     echo && \
-    echo "content of build-amd64-v2:" && ls -l /build-amd64-v2 && \
+    echo "content of build-amd64v2:" && ls -l /build-amd64v2 && \
     echo && \
     echo "content of build-arm64:" && ls -l /build-arm64
 

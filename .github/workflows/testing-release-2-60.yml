@@ -127,7 +127,7 @@ jobs:
           --file ${{ env.DOCKERFILE_PATH }} \
           --target release \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
-          --build-arg BUILDER_IMAGE=${{ env.BUILDER_IMAGE }} \
+          --build-arg BUILDER_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
           --tag ${{ env.DOCKER_URL }}:2.60 \
           --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
           --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
