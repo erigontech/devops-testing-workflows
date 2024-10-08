@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
           repository: ${{ env.APP_REPO }}
-          fetch-depth: 1
+          fetch-depth: 0
           ref: ${{ env.CHECKOUT_REF }}
           path: 'erigon'
 
