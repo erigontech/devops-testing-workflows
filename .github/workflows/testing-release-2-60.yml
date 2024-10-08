@@ -138,6 +138,7 @@ jobs:
           for dir in build-*; do
             cd $dir; sha256sum * > checksums.txt
             tar czvf $HOME/release/erigon-2.60-$(echo $dir | sed "s,build-,,").tar.gz .
+            cd -
           done
           cd $HOME/release
           sha256sum * > checksums.txt
