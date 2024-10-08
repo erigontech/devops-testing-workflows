@@ -39,7 +39,7 @@ jobs:
       - name: Get commit id
         id: getCommitId
         run: |
-          mkdir build-arm64 build-amd64 build-amd64-v2
+          mkdir build-arm64 build-amd64 build-amd64v2
           cd erigon
           echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
@@ -93,7 +93,7 @@ jobs:
         run: |
           docker run --platform linux/amd64/v2 \
           --rm -v $(pwd)/erigon:/erigon:ro \
-          -v $(pwd)/build-amd64-v2:/erigon-build \
+          -v $(pwd)/build-amd64v2:/erigon-build \
           -v ${HOME}/.cache:/root/.cache \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/bash \
@@ -121,6 +121,7 @@ jobs:
         run: |
           mv -v build-amd64 erigon/
           mv -v build-arm64 erigon/
+          mv -v build-amd64v2 erigon
           cd erigon
           docker buildx build \
           --file ${{ env.DOCKERFILE_PATH }} \
