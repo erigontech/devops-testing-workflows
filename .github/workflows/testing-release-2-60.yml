@@ -99,18 +99,6 @@ jobs:
           -w /erigon --entrypoint /bin/bash \
           ${{ env.BUILDER_IMAGE }} \
           -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
-            
-      - name: Content of build directories
-        run: |
-          echo "Content of build-amd64:"
-          ls -l $(pwd)/build-amd64
-          echo "--- end ---"
-          echo "Content of build-arm64:"
-          ls -l $(pwd)/build-arm64
-          echo "--- end ---"
-          ls -lao
-          echo "Content of ../"
-          ls -lao ../
 
       - name: Build and push multiplatform docker images
         #if: 3 > 4
@@ -142,3 +130,46 @@ jobs:
           --label org.opencontainers.image.base.name="${{ env.TARGET_BASE_IMAGE }}" \
           --push \
           --platform linux/amd64,linux/amd64/v2,linux/arm64 .
+
+      - name: Pack Artifacts
+        run: |
+          cd erigon;
+          mkdir $HOME/release
+          for dir in build-*; do
+            cd $dir; sha256sum * > checksums.txt
+            tar czvf $HOME/release/erigon-2.60-$(echo $dir | sed "s,build-,,").tar.gz .
+          done
+          cd $HOME/release
+          sha256sum * > checksums.txt
+
+      - name: Upload Artifact - checksums.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums.txt
+          path: $HOME/release/checksums.txt
+          retention-days: 7
+          compression-level: 0
+
+      - name: Upload Artifact - arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: erigon-2.60-arm64.tar.gz
+          path: $HOME/release/erigon-2.60-arm64.tar.gz
+          retention-days: 7
+          compression-level: 0
+
+      - name: Upload Artifact - amd64
+        uses: actions/upload-artifact@v4
+        with:
+          name: erigon-2.60-amd64.tar.gz
+          path: $HOME/release/erigon-2.60-amd64.tar.gz
+          retention-days: 7
+          compression-level: 0
+          
+      - name: Upload Artifact - amd64v2
+        uses: actions/upload-artifact@v4
+        with:
+          name: erigon-2.60-amd64v2.tar.gz
+          path: $HOME/release/erigon-2.60-amd64v2.tar.gz
+          retention-days: 7
+          compression-level: 0
