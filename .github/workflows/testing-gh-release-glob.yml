@@ -45,5 +45,5 @@ jobs:
             --draft=true \
             --title "${{ inputs.version }}" \
             --notes "Version ${{ inputs.version }} released" \
-            notfound-file \
+            ${{ inputs.version }} \
             *.tar.gz
