@@ -4,7 +4,7 @@ run-name: "Testing Rel 2.60"
 env:
   APPLICATION: "erigon"
   BUILDER_IMAGE: "golang:1.22-bookworm"
-  TARGET_BASE_IMAGE: "debian:12.7"
+  TARGET_BASE_IMAGE: "debian:12.7-slim"
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
