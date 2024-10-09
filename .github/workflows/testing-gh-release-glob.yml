@@ -26,6 +26,8 @@ jobs:
         - name: Output env variables
           run: |
             set
+            echo
+            echo "PWD is $(pwd)"
 
         - name: Create test archives
           run: |
