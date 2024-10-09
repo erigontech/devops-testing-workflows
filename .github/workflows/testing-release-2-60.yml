@@ -8,6 +8,7 @@ env:
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
+  RELEASE_VERSION: "2.60.101"
   LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
@@ -136,20 +137,16 @@ jobs:
           --push \
           --platform linux/amd64,linux/amd64/v2,linux/arm64 .
 
-
-
-## COPY ./dist/${APPLICATION}_${VERSION}_linux_${TARGETARCH}${TARGETVARIANT}.tar.gz /tmp/${APPLICATION}.tar.gz
-          
       - name: Pack Artifacts
         run: |
-          exit 1
-          cd erigon;
+          cd ${GITHUB_WORKSPACE}
           mkdir $GITHUB_WORKSPACE/release
           for dir in build-*; do
             cd $dir
-            echo Current directory is $(pwd) .
+            echo Current directory is $(pwd) . Checksum file and archive will be created for this directory
             sha256sum * > checksums.txt
-            tar czvf $GITHUB_WORKSPACE/release/erigon-2.60-$(echo $dir | sed "s,build-,,").tar.gz .
+            tar czvf $GITHUB_WORKSPACE/release/${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,').tar.gz \
+              --transform "s,^,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')/," .
             cd -
           done
           cd $GITHUB_WORKSPACE/release
@@ -167,23 +164,23 @@ jobs:
       - name: Upload Artifact - arm64
         uses: actions/upload-artifact@v4
         with:
-          name: erigon-2.60-arm64.tar.gz
-          path: ${{ github.workspace }}/release/erigon-2.60-arm64.tar.gz
+          name: ${APPLICATION}_${RELEASE_VERSION}_linux_arm64.tar.gz
+          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_arm64.tar.gz
           retention-days: 7
           compression-level: 0
 
       - name: Upload Artifact - amd64
         uses: actions/upload-artifact@v4
         with:
-          name: erigon-2.60-amd64.tar.gz
-          path: ${{ github.workspace }}/release/erigon-2.60-amd64.tar.gz
+          name: ${APPLICATION}_${RELEASE_VERSION}_linux_amd64.tar.gz
+          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_amd64.tar.gz
           retention-days: 7
           compression-level: 0
           
       - name: Upload Artifact - amd64v2
         uses: actions/upload-artifact@v4
         with:
-          name: erigon-2.60-amd64v2.tar.gz
-          path: ${{ github.workspace }}/release/erigon-2.60-amd64v2.tar.gz
+          name: ${APPLICATION}_${RELEASE_VERSION}_linux_amd64v2.tar.gz
+          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_amd64v2.tar.gz
           retention-days: 7
           compression-level: 0
