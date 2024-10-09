@@ -39,12 +39,16 @@ jobs:
       - name: Get commit id
         id: getCommitId
         run: |
-          mkdir build-arm64 build-amd64 build-amd64v2
+          mkdir ${GITHUB_WORKSPACE}/build-arm64 ${GITHUB_WORKSPACE}/build-amd64 ${GITHUB_WORKSPACE}/build-amd64v2
           cd erigon
           echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
           echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
           cd ..
+          echo GITHUB_WORKSPACE=${GITHUB_WORKSPACE} and pwd=$(pwd)
+          echo
+          echo "ls -l .."
+          ls -l ../
 
       - name: Configure go build and pkg cache for one week only
         id: cache
@@ -72,7 +76,7 @@ jobs:
           docker run --platform linux/arm64
           --rm
           -v $(pwd)/erigon:/erigon:ro
-          -v $(pwd)/build-arm64:/erigon-build
+          -v ${GITHUB_WORKSPACE}/build-arm64:/erigon-build
           -v ${HOME}/.cache:/root/.cache
           -v ${HOME}/go/pkg/mod:/go/pkg/mod
           -w /erigon --entrypoint /bin/bash
@@ -85,7 +89,7 @@ jobs:
         run: |
           docker run --platform linux/amd64 \
           --rm -v $(pwd)/erigon:/erigon:ro \
-          -v $(pwd)/build-amd64:/erigon-build \
+          -v ${GITHUB_WORKSPACE}/build-amd64:/erigon-build \
           -v ${HOME}/.cache:/root/.cache \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/bash \
@@ -96,7 +100,7 @@ jobs:
         run: |
           docker run --platform linux/amd64/v2 \
           --rm -v $(pwd)/erigon:/erigon:ro \
-          -v $(pwd)/build-amd64v2:/erigon-build \
+          -v ${GITHUB_WORKSPACE}/build-amd64v2:/erigon-build \
           -v ${HOME}/.cache:/root/.cache \
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/bash \
@@ -110,12 +114,10 @@ jobs:
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY }}
           DOCKERFILE_PATH: ../devops-testing-workflows/Dockerfile.2-60
         run: |
-          mv -v build-amd64 erigon/
-          mv -v build-arm64 erigon/
-          mv -v build-amd64v2 erigon
-          cd erigon
+          cd ${GITHUB_WORKSPACE}
+          ls -lao
           docker buildx build \
-          --file ${{ env.DOCKERFILE_PATH }} \
+          --file devops-testing-workflows/Dockerfile.2-60 \
           --target release \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
           --build-arg BUILDER_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
@@ -134,8 +136,13 @@ jobs:
           --push \
           --platform linux/amd64,linux/amd64/v2,linux/arm64 .
 
+
+
+## COPY ./dist/${APPLICATION}_${VERSION}_linux_${TARGETARCH}${TARGETVARIANT}.tar.gz /tmp/${APPLICATION}.tar.gz
+          
       - name: Pack Artifacts
         run: |
+          exit 1
           cd erigon;
           mkdir $GITHUB_WORKSPACE/release
           for dir in build-*; do
