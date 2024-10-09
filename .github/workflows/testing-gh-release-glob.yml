@@ -23,6 +23,10 @@ jobs:
             fetch-depth: 0
             ref: 'main'
 
+        - name: Output env variables
+          run: |
+            set
+
         - name: Create test archives
           run: |
             date > archive_${{ inputs.version }}_linux_arm64.tar.gz
