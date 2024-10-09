@@ -68,15 +68,18 @@ jobs:
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db ## v3.6.1
 
       - name: build arm64
-        run: |
-          docker run --platform linux/arm64 \
-          --rm -v $(pwd)/erigon:/erigon:ro \
-          -v $(pwd)/build-arm64:/erigon-build \
-          -v ${HOME}/.cache:/root/.cache \
-          -v ${HOME}/go/pkg/mod:/go/pkg/mod \
-          -w /erigon --entrypoint /bin/bash \
-          ${{ env.BUILDER_IMAGE }} \
-          -c "git config --global --add safe.directory /erigon; make GOARCH=arm64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool"
+        run: >
+          docker run --platform linux/arm64
+          --rm
+          -v $(pwd)/erigon:/erigon:ro
+          -v $(pwd)/build-arm64:/erigon-build
+          -v ${HOME}/.cache:/root/.cache
+          -v ${HOME}/go/pkg/mod:/go/pkg/mod
+          -w /erigon --entrypoint /bin/bash
+          ${{ env.BUILDER_IMAGE }}
+          -c "git config --global --add safe.directory /erigon;
+              make GOARCH=arm64 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm 
+                erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool"
 
       - name: build amd64
         run: |
