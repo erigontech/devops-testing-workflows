@@ -1,6 +1,9 @@
 name: Testing gh release create glob
 run-name: "gh release create"
 
+env:
+  APPLICATION: "erigon"
+
 on:
   workflow_dispatch:
     inputs:
