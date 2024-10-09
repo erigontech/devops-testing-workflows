@@ -164,16 +164,16 @@ jobs:
       - name: Upload Artifact - arm64
         uses: actions/upload-artifact@v4
         with:
-          name: ${APPLICATION}_${RELEASE_VERSION}_linux_arm64.tar.gz
-          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_arm64.tar.gz
+          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_arm64.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_arm64.tar.gz
           retention-days: 7
           compression-level: 0
 
       - name: Upload Artifact - amd64
         uses: actions/upload-artifact@v4
         with:
-          name: ${APPLICATION}_${RELEASE_VERSION}_linux_amd64.tar.gz
-          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_amd64.tar.gz
+          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64.tar.gz
           retention-days: 7
           compression-level: 0
           
@@ -181,6 +181,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${APPLICATION}_${RELEASE_VERSION}_linux_amd64v2.tar.gz
-          path: ${{ github.workspace }}/release/${APPLICATION}_${RELEASE_VERSION}_linux_amd64v2.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64v2.tar.gz
           retention-days: 7
           compression-level: 0
