@@ -8,7 +8,7 @@ env:
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
-  RELEASE_VERSION: "2.60.101"
+  RELEASE_VERSION: "v2.60.101"
   LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
@@ -122,7 +122,9 @@ jobs:
           --target release \
           --build-arg TARGET_BASE_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
           --build-arg BUILDER_IMAGE=${{ env.TARGET_BASE_IMAGE }} \
-          --tag ${{ env.DOCKER_URL }}:2.60 \
+          --tag ${{ env.DOCKER_URL }}:${{ env.RELEASE_VERSION }} \
+          --attest type=provenance,mode=max \
+          --sbom=true \
           --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
           --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
           --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
@@ -146,7 +148,7 @@ jobs:
             echo Current directory is $(pwd) . Checksum file and archive will be created for this directory
             sha256sum * > checksums.txt
             tar czvf $GITHUB_WORKSPACE/release/${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,').tar.gz \
-              --transform "s,^,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')/," .
+              --transform "s,^,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')," .
             cd -
           done
           cd $GITHUB_WORKSPACE/release
@@ -180,7 +182,7 @@ jobs:
       - name: Upload Artifact - amd64v2
         uses: actions/upload-artifact@v4
         with:
-          name: ${APPLICATION}_${RELEASE_VERSION}_linux_amd64v2.tar.gz
+          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64v2.tar.gz
           path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64v2.tar.gz
           retention-days: 7
           compression-level: 0
