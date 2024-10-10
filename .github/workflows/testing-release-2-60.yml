@@ -8,7 +8,7 @@ env:
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
-  RELEASE_VERSION: "v2.60.101"
+  RELEASE_VERSION: "v2.60.102"
   LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
@@ -148,7 +148,7 @@ jobs:
             echo Current directory is $(pwd) . Checksum file and archive will be created for this directory
             sha256sum * > checksums.txt
             tar czvf $GITHUB_WORKSPACE/release/${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,').tar.gz \
-              --transform "s,^,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')," .
+              --transform "s,^./,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')/," .
             cd -
           done
           cd $GITHUB_WORKSPACE/release
