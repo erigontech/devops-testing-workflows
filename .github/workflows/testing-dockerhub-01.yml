@@ -1,0 +1,20 @@
+name: Testing dockerhub api
+run-name: "Testing dockerhub api"
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  Build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Run curl query
+        env:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+        run: |
+          curl  -s -H \"Authorization: JWT ${password}\" https://hub.docker.com/v2/namespaces/erigontech/repositories/erigon/tags?page=1&page_size=100 | jq -r '.results|.[]|.name + " " + .tag_last_pushed'
+
