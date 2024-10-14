@@ -20,4 +20,9 @@ jobs:
     steps:
 
       - name: Run 5 min step
-        run: sleep 300
+        run: |
+            echo github_ref=${GITHUB_REF}
+            echo DEBUG - environment variables:
+            set
+            echo Sleeping 5 mins
+            sleep 300
