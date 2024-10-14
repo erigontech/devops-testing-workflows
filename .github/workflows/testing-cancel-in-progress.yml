@@ -1,0 +1,23 @@
+name: Testing cancel in progress
+run-name: "Testing cancel in progress"
+
+on:
+    push:
+        branches:
+        - main
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+
+  Build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+
+      - name: Run 5 min step
+        run: sleep 300
