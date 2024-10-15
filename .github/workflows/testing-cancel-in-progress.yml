@@ -11,7 +11,7 @@ on:
 concurrency:
     group: ${{ github.ref }}
     ### cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    cancel-in-progress: ${{ contains(fromJSON('["refs/heads/release", "refs/heads/main"]'), github.event_name) }}    
+    cancel-in-progress: ${{ !contains(fromJSON('["refs/heads/release", "refs/heads/main"]'), github.ref) }}    
 
 jobs:
 
