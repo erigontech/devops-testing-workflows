@@ -5,7 +5,7 @@ run-name: "Testing cancel in progress"
 on:
     push:
         branches:
-        - main
+        - '**'
     workflow_dispatch:
 
 concurrency:
