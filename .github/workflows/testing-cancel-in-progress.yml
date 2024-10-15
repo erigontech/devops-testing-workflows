@@ -1,6 +1,6 @@
 name: Testing cancel in progress
 run-name: "Testing cancel in progress"
-### some other change 1
+### some other change 2
 
 on:
     push:
