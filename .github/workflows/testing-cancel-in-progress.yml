@@ -11,9 +11,9 @@ on:
 concurrency:
     group: ${{ github.ref }}
     ### cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-    cancel-in-progress: ${{ !startsWith(fromJSON('[
-            "refs/heads/release/2",
-            "refs/heads/release/3",
+    cancel-in-progress: ${{ !contains(fromJSON('[
+            "refs/heads/release/3.4.5",
+            "refs/heads/release/5.6.7",
             "refs/heads/main"
         ]'), github.ref) }}
 jobs:
