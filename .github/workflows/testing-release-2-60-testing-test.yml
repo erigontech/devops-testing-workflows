@@ -1,5 +1,5 @@
 name: Release 2.60x with testing steps
-run-name: [test] Release ${{ inputs.release_version }} from branch ${{ inputs.checkout_ref  }} executed by @${{ github.actor }}
+run-name: test - Release ${{ inputs.release_version }} from branch ${{ inputs.checkout_ref }} executed by @${{ github.actor }}
 
 env:
   APPLICATION: "erigon"
