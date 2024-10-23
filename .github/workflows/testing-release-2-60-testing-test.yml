@@ -166,31 +166,32 @@ jobs:
           - id: linux/amd64
             #runner: ubuntu-latest-release-test-amd64
             runner: ubuntu-latest
-            artifact: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+            artifact: linux_amd64.tar.gz
           - id: linux/amd64/v2
             #runner: ubuntu-latest-release-test-amd64
             runner: ubuntu-latest
-            artifact: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+            artifact: linux_amd64v2.tar.gz
           - id: linux/arm64
             #runner: ubuntu-latest-release-test-arm64
             runner: ubuntu-latest
-            artifact: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+            artifact: linux_arm64.tar.gz
                     
 
     steps:
       - name: Set up Python
         uses: actions/setup-python@v4
 
-      - name: Download artifact ${{ matrix.artifact }}
+      - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
 
-      - name: Extract artifact ${{ matrix.artifact }}
+      - name: Extract artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
         run: |
           pwd
           ls -lR .
+          ls -l ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
 
             
   publish-release:
