@@ -13,6 +13,11 @@ env:
 
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        required: true
+        type: string
+        description: 'Release version number (Pattern - v#.#.# , f.e. v2.60.1 or v3.0.0 or v3.0.0-alpha1 for pre-releases. Use prefix "v".)'
 
 jobs:
 
@@ -116,18 +121,18 @@ jobs:
             cd $dir
             echo Current directory is $(pwd) . Checksum file and archive will be created for this directory
             sha256sum * > checksums.txt
-            tar czvf $GITHUB_WORKSPACE/release/${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,').tar.gz \
-              --transform "s,^./,${APPLICATION}_${RELEASE_VERSION}_linux_$(echo $dir | sed 's,build-,,')/," .
+            tar czvf $GITHUB_WORKSPACE/release/${APPLICATION}_${{ inputs.release_version }}_linux_$(echo $dir | sed 's,build-,,').tar.gz \
+              --transform "s,^./,${APPLICATION}_${{ inputs.release_version }}_linux_$(echo $dir | sed 's,build-,,')/," .
             cd -
           done
           cd $GITHUB_WORKSPACE/release
-          sha256sum * > ${APPLICATION}_${RELEASE_VERSION}_checksums.txt
+          sha256sum * > ${APPLICATION}_${{ inputs.release_version }}_checksums.txt
           find . -type f -ls
   
       - name: Upload Artifact - checksums.txt
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_checksums.txt
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
           path: ${{ github.workspace }}/release/checksums.txt
           retention-days: 7
           compression-level: 0
@@ -135,24 +140,24 @@ jobs:
       - name: Upload Artifact - arm64
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_arm64.tar.gz
-          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_arm64.tar.gz
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
           retention-days: 7
           compression-level: 0
   
       - name: Upload Artifact - amd64
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64.tar.gz
-          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64.tar.gz
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           retention-days: 7
           compression-level: 0
             
       - name: Upload Artifact - amd64v2
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64v2.tar.gz
-          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ env.RELEASE_VERSION }}_linux_amd64v2.tar.gz
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
           retention-days: 7
           compression-level: 0
 
