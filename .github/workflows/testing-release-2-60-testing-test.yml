@@ -133,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
-          path: ${{ github.workspace }}/release/checksums.txt
+          path: ${{ github.workspace }}/release/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
           retention-days: 7
           compression-level: 0
   
