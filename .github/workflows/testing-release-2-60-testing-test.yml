@@ -202,9 +202,15 @@ jobs:
           tar xzvf ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
           ls -lR
 
+      - name: Fast checkout git repository erigontech/erigon-qa
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: "erigontech/erigon-qa"
+          fetch-depth: 1
+          path: 'erigon-qa'
+
       - name: Checkout QA Tests Repository & Install Requirements
         run: |
-          git -c advice.detachedHead=false clone --depth 1 https://github.com/erigontech/erigon-qa ./erigon-qa
           cd ./erigon-qa
           pip3 install -r requirements.txt          
           # Run Erigon, wait sync and check ability to maintain sync
