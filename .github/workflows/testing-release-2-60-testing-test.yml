@@ -205,10 +205,11 @@ jobs:
       - name: Fast checkout git repository erigontech/erigon-qa
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
         with:
-          repository: "erigontech/erigon-qa"
+          token: ${{ secrets.ORG_GITHUB_ERIGONTECH_ERIGON_QA_READ }}
+          repository: erigontech/erigon-qa
           fetch-depth: 1
-          ref: 'main'
-          path: 'erigon-qa'
+          ref: main
+          path: erigon-qa
 
       - name: Checkout QA Tests Repository & Install Requirements
         run: |
