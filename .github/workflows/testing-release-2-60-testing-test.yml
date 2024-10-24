@@ -190,7 +190,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
-          path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          #path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          path: .
 
       - name: Extract artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
         run: |
@@ -207,19 +208,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
-          path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          path: .
 
       - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
-          path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+          path: .
           
       - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
-          path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          path: .
 
       - name: Debug output
         run: |
