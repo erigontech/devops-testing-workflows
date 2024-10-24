@@ -9,6 +9,9 @@ env:
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
   RELEASE_VERSION: "v2.60.102"
+  TEST_TRACKING_TIME_SECONDS: 7200 # 2 hours
+  TEST_TOTAL_TIME_SECONDS: 18000   # 5 hours
+  TEST_CHAIN: "mainnet"
   LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
@@ -190,14 +193,37 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
-          #path: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
           path: .
 
       - name: Extract artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
         run: |
           pwd
           ls -l ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          tar xzvf ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          ls -lR
 
+      - name: Checkout QA Tests Repository & Install Requirements
+        run: |
+          git -c advice.detachedHead=false clone --depth 1 https://github.com/erigontech/erigon-qa ./erigon-qa
+          cd ./erigon-qa
+          pip3 install -r requirements.txt          
+          # Run Erigon, wait sync and check ability to maintain sync
+          python3 test_system/qa-tests/tip-tracking/run_and_check_tip_tracking.py \
+            ../${{ env.APPLICATION }}_${{ inputs.release_version }} ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
+          # Capture monitoring script exit status
+          test_exit_status=$?
+          # Save the subsection reached status
+          echo "::set-output name=test_executed::true"
+          # Check test runner script exit status
+          if [ $test_exit_status -eq 0 ]; then
+            echo "Tests completed successfully"
+            echo "TEST_RESULT=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "Error detected during tests"
+            echo "TEST_RESULT=failure" >> "$GITHUB_OUTPUT"
+          fi
+
+            
   publish-release:
     name: Publish release
     runs-on: ubuntu-latest
@@ -220,6 +246,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          path: .
+
+      - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
           path: .
 
       - name: Debug output
