@@ -207,6 +207,7 @@ jobs:
         with:
           repository: "erigontech/erigon-qa"
           fetch-depth: 1
+          ref: 'main'
           path: 'erigon-qa'
 
       - name: Checkout QA Tests Repository & Install Requirements
