@@ -215,7 +215,8 @@ jobs:
         run: |
           cd ./erigon-qa/test_system
           ls -lao
-          pip3 install -r requirements.txt          
+          pip3 install -r requirements.txt   
+          ln -s ../base_library base_library       
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
             ../${{ env.APPLICATION }}_${{ inputs.release_version }} ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
