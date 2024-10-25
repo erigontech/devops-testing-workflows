@@ -217,7 +217,7 @@ jobs:
           pwd
           ls -lao
           pip3 install -r requirements.txt   
-          ln -s base_library qa-tests/tip-tracking/
+          ln -s $(pwd)/base_library $(pwd)/qa-tests/tip-tracking/base_library
           echo "DEBUG -- content of directory $(pwd) :"
           ls -l
           echo "DEBUG -- content of directory $(pwd)/qa-tests/tip-tracking/"
