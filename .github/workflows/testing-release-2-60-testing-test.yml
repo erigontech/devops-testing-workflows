@@ -214,9 +214,14 @@ jobs:
       - name: Checkout QA Tests Repository & Install Requirements
         run: |
           cd ./erigon-qa/test_system
+          pwd
           ls -lao
           pip3 install -r requirements.txt   
-          ln -s base_library qa-tests/tip-tracking/base_library       
+          ln -s base_library qa-tests/tip-tracking/
+          echo "DEBUG -- content of directory $(pwd) :"
+          ls -l
+          echo "DEBUG -- content of directory $(pwd)/qa-tests/tip-tracking/"
+          ls -l $(pwd)/qa-tests/tip-tracking/
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
             ../${{ env.APPLICATION }}_${{ inputs.release_version }} ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
