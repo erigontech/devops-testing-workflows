@@ -225,9 +225,10 @@ jobs:
           echo "DEBUG -- content of directory GITHUB_WORKSPACE ${GITHUB_WORKSPACE} :"
           ls -l ${GITHUB_WORKSPACE}
           echo "DEBUG -- end."
+          mkdir ${RUNNER_WORKSPACE}/erigon-data
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
-            ${GITHUB_WORKSPACE}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}/${{ env.APPLICATION }} \
+            ${GITHUB_WORKSPACE}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }} \
               ${RUNNER_WORKSPACE}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
           # Capture monitoring script exit status
           test_exit_status=$?
