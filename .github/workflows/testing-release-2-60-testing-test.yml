@@ -174,32 +174,32 @@ jobs:
           - id: linux/amd64
             #runner: ubuntu-latest-release-test-amd64
             runner: ubuntu-latest
-            artifact: linux_amd64.tar.gz
+            artifact: linux_amd64
           - id: linux/amd64/v2
             #runner: ubuntu-latest-release-test-amd64
             runner: ubuntu-latest
-            artifact: linux_amd64v2.tar.gz
+            artifact: linux_amd64v2
           - id: linux/arm64
             #runner: ubuntu-latest-release-test-arm64
             runner: ubuntu-latest
-            artifact: linux_arm64.tar.gz
+            artifact: linux_arm64
                     
 
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
 
-      - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+      - name: Download artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}.tar.gz
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}.tar.gz
           path: .
 
-      - name: Extract artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+      - name: Extract artifact ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}.tar.gz
         run: |
           pwd
-          ls -l ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
-          tar xzvf ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}
+          ls -l ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}.tar.gz
+          tar xzvf ${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}.tar.gz
           ls -lR
 
       - name: Fast checkout git repository erigontech/erigon-qa
@@ -224,7 +224,8 @@ jobs:
           ls -l $(pwd)/qa-tests/tip-tracking/
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
-            ../${{ env.APPLICATION }}_${{ inputs.release_version }} ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
+            ${{ env.GITHUB_WORKSPACE }}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}/${{ env.APPLICATION }} \
+              ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
           # Capture monitoring script exit status
           test_exit_status=$?
           # Save the subsection reached status
