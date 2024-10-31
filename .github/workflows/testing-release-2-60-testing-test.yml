@@ -222,10 +222,13 @@ jobs:
           ls -l
           echo "DEBUG -- content of directory $(pwd)/qa-tests/tip-tracking/"
           ls -l $(pwd)/qa-tests/tip-tracking/
+          echo "DEBUG -- content of directory GITHUB_WORKSPACE ${GITHUB_WORKSPACE} :"
+          ls -l ${GITHUB_WORKSPACE}
+          echo "DEBUG -- end."
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
-            ${{ env.GITHUB_WORKSPACE }}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}/${{ env.APPLICATION }} \
-              ${{ runner.workspace }}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
+            ${GITHUB_WORKSPACE}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }}/${{ env.APPLICATION }} \
+              ${RUNNER_WORKSPACE}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }} minimal_node
           # Capture monitoring script exit status
           test_exit_status=$?
           # Save the subsection reached status
