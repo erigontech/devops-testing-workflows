@@ -1,0 +1,257 @@
+name: Release-gr
+run-name: "Testing release workflow with goreleaser WITH CACHE"
+
+env:
+  APPLICATION: "erigon"
+  GOLANG_BUILDER_VERSION: "1.22-bookworm"
+  ## BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.21.13"
+  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.22.7"
+  TARGET_BASE_VERSION: "alpine:3.20.3"
+  APP_REPO: "erigontech/erigon"
+  PACKAGE: "github.com/erigontech/erigon"
+  DOCKERHUB_REPOSITORY_DEV: "erigontech/dev-erigon"
+  DOCKERHUB_REPOSITORY_PRD: "erigontech/dev-erigon"
+  GITHUB_AUTOMATION_EMAIL: "github-automation@erigon.tech"
+  GITHUB_AUTOMATION_NAME: "Erigon Github Automation"
+  LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
+
+on:
+  push:
+    branches-ignore:
+      - '**'
+    #branches:
+    #  - 'master'
+    #tags:
+      ## only trigger on release tags:
+      #- 'v*.*.*'
+      #- 'v*.*.*-*'
+  workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: true
+        type: string
+        default: 'feature/issue-7893-2'
+        description: 'The branch to checkout and build artifacts from. By default "main".'
+      release_version:
+        required: true
+        type: string
+        description: 'Release version number (Pattern - #.#.# , f.e. 2.41.3 or 3.0.0 or 3.0.0-alpha1 for pre-releases. Do not prefix it with "v".)'
+      perform_release:
+        required: false
+        type: boolean
+        default: false
+        description: 'perform_release: when set then all artifacts will be published and the DRAFT of the release 
+          notes will be created.'
+
+jobs:
+
+  build-release:
+    runs-on: ubuntu-24.04
+    #runs-on: ubuntu-latest-devops-xxlarge
+    timeout-minutes: 60
+    name: Build Release
+
+    steps:
+      - name: Cleanup space
+        run: |
+          df -h
+          sudo rm -drf \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /usr/local/julia* \
+            /opt/google/chrome \
+            /opt/microsoft/msedge \
+            /opt/microsoft/powershell \
+            /usr/lib/mono \
+            /usr/local/lib/android \
+            /usr/local/share/chromium 
+          echo DEBUG list of docker images
+          docker image ls
+          sudo docker image rm $(docker image ls --filter=reference='node:1*' -q)
+          df -h
+
+      - name: Checkout git repository ${{ env.APP_REPO }}
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
+        with:
+          repository: ${{ env.APP_REPO }}
+          fetch-depth: 0
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Check if tag ${{ inputs.release_version }} already exists in case perform_release is set.
+        if: ${{ (inputs.perform_release) && (inputs.release_version != '') }}
+        run: |
+          if git ls-remote --exit-code --quiet --tags origin '${{ inputs.release_version }}'; then
+            echo "ERROR: tag ${{ inputs.release_version }} exists and workflow is performing release. Exit."
+            exit 1
+          else
+            echo "OK: tag ${{ inputs.release_version }} does not exists. Proceeding."
+          fi
+
+      - name: Get commit id
+        id: getCommitId
+        run: |
+          echo "id_old=$(git log -1 --format='%H')" >> $GITHUB_OUTPUT
+          echo "short_commit_id_old=$(git log -1 --format='%h')" >> $GITHUB_OUTPUT
+
+          echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf ## v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db ## v3.6.1
+
+      - name: Build binaries with goreleaser
+        env:
+          BUILD_VERSION: ${{ inputs.release_version }}
+          DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
+        run: |
+          mkdir -p local-erigon-go local-erigon-go-cache
+          docker run --rm \
+            -w /${{ env.APPLICATION }}/ \
+            -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
+            -e GIT_COMMIT=${{ steps.getCommitId.outputs.id }} \
+            -e GIT_BRANCH=${{ inputs.checkout_ref }} \
+            -e GIT_TAG=${{ inputs.release_version }} \
+            -e PACKAGE=${{ env.PACKAGE }} \
+            -e APPLICATION=${{ env.APPLICATION }} \
+            -e DOCKER_URL=${{ env.DOCKER_URL }} \
+            -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
+            -v $(pwd):/${{ env.APPLICATION}} \
+            -v ./local-erigon-go:/root/go \
+            -v ./local-erigon-go-cache:/root/.cache \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            ${{ env.BUILDER_IMAGE }} release --timeout 60m --clean --skip=validate,announce,publish
+          echo "DEBUG ls -lao in the working directory"
+          ls -lao
+          echo "DEBUG content of the dist/ directory"
+          find dist/ -ls
+          echo "-- end --"
+          du -sh local-erigon*
+          find local-erigon-go -ls
+          echo "-- end ---"
+          find local-erigon-go-cache -ls
+
+
+          
+#      - name: Save build cache
+#        uses: actions/cache/save@v4
+#        with:
+#          path: |
+#            ./local-erigon-go-cache
+#          key: ${{ runner.os }}-erigon-go-build-cache
+
+            
+      - name: Build and push multiplatform docker images (${{ env.BUILD_VERSION }} and latest) in case perform_release is true
+        if: ${{ inputs.perform_release }}
+        env:
+          BUILD_VERSION: ${{ inputs.release_version }}
+          DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
+          DOCKERFILE_PATH: ./Dockerfile.release
+        run: |
+          docker buildx build \
+          --file ${{ env.DOCKERFILE_PATH }} \
+          --build-arg TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
+          --build-arg VERSION=${{ env.BUILD_VERSION }} \
+          --build-arg APPLICATION=${{ env.APPLICATION }} \
+          --tag ${{ env.DOCKER_URL }}:${{ env.BUILD_VERSION }} \
+          --target release \
+          --attest type=provenance,mode=max \
+          --sbom=true \
+          --label org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+          --label org.opencontainers.image.authors="https://github.com/erigontech/erigon/graphs/contributors" \
+          --label org.opencontainers.image.url="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.documentation="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.source="https://github.com/erigontech/erigon/blob/main/Dockerfile" \
+          --label org.opencontainers.image.version=${{ inputs.release_version }} \
+          --label org.opencontainers.image.revision=${{ steps.getCommitId.outputs.id }} \
+          --label org.opencontainers.image.vcs-ref-short=${{ steps.getCommitId.outputs.short_commit_id }} \
+          --label org.opencontainers.image.vendor="${{ github.repository_owner }}" \
+          --label org.opencontainers.image.description="${{ env.LABEL_DESCRIPTION }}" \
+          --label org.opencontainers.image.base.name="debian:${{ env.TARGET_BASE_VERSION }}" \
+          --push \
+          --platform linux/amd64,linux/amd64/v2,linux/arm64 .
+
+      - name: Upload artifact -- linux/arm64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- linux/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- linux/amd64/v2
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- darwin/arm64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- darwin/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Upload artifact -- windows/amd64
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
+          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Publish draft of the Release notes with assets in case perform_release is set
+        if: ${{ inputs.perform_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DOCKER_TAGS: ${{ env.DOCKERHUB_REPOSITORY_DEV }}:${{ inputs.release_version }}
+          GITHUB_RELEASE_TARGET: main
+          GITHUB_RELEASE_TARGET_CORRECT: ${{ inputs.checkout_ref }}
+          LOCAL_VERSION: ${{ inputs.release_version && inputs.release_version || format('SNAPSHOT-{0}',env.my_short_commit_id) }}
+        run: |
+          cd dist
+          echo DEBUG list of artifact files for release
+          sha256sum *.tar.gz > ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+          ls -l *.tar.gz *.zip ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt
+          echo DEBUG end of the list
+          gh release create ${LOCAL_VERSION} *.tar.gz *.zip ${HOME}/${{ env.APPLICATION }}_${{ inputs.release_version }}_checksums.txt \
+            --generate-notes \
+            --target ${GITHUB_RELEASE_TARGET} \
+            --draft=true \
+            --title "${{ inputs.release_version }}" \
+            --notes "**Improvements:**<br>- ...coming soon <br><br>**Bugfixes:**<br><br>- ...coming soon<br><br>**Docker images:**<br><br>Docker image released:<br> ${{ env.DOCKER_TAGS }}<br><br>... coming soon<br>"
+
