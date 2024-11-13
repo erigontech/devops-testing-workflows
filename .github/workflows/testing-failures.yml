@@ -20,5 +20,6 @@ jobs:
       - name: run main job
         run: |
           set
-          echo cndtion=${{ inputs.cndtion }}
+          if [ ${{ inputs.cndtion }} -eq "0" ]; then exit 1 ; fi
+          
         
