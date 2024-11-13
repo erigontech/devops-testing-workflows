@@ -20,5 +20,5 @@ jobs:
       - name: run main job
         run: |
           set
-          echo cndtion=${{ env.cndtion }}
+          echo cndtion=${{ inputs.cndtion }}
         
