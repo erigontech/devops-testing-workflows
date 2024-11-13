@@ -6,9 +6,9 @@ on:
     inputs:
       cndtion:
         required: true
-        type: boolean
-        default: false
-        description: 'cndtion: could be true/false. main-job will fail if true, otherwise it will finish successfully'
+        type: string
+        default: "0"
+        description: 'cndtion: could be 0/1. main-job will fail if 0, in case of 1 it will finish successfully'
 
 jobs:
 
