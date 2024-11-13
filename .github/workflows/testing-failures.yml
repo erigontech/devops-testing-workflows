@@ -1,0 +1,23 @@
+name: Testing failures
+run-name: "Testing failures"
+
+on:
+  workflow_dispatch:
+    inputs:
+      cndtion:
+        required: true
+        type: boolean
+        default: false
+        description: 'cndtion: could be true/false. main-job will fail if true, otherwise it will finish successfully'
+
+jobs:
+
+  main-job:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: run main job
+        run: |
+          echo cndtion=${{ env.cndtion }}
+        
