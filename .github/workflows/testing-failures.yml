@@ -19,5 +19,6 @@ jobs:
     steps:
       - name: run main job
         run: |
+          set
           echo cndtion=${{ env.cndtion }}
         
