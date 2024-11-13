@@ -24,10 +24,11 @@ jobs:
 
   on-failure-job:
     needs: [ main-job ]
+    if:  always() && !contains(needs.main-job.result, 'success')
     runs-on: ubuntu-22.04
     
     steps:
-      - name: test
+      - name: Run only if "main-job" failed or canceled
         run: |
           echo ${{ needs.main-job.result }} 
         
