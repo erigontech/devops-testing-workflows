@@ -20,6 +20,14 @@ jobs:
       - name: run main job
         run: |
           set
-          if [ ${{ inputs.cndtion }} -eq "0" ]; then exit 1 ; fi
-          
+          if [ ${{ inputs.cndtion }} -eq 0 ]; then exit 1 ; fi
+
+  on-failure-job:
+    needs: [ main-job ]
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: test
+        run: |
+          echo ${{ jobs.main-job.result }} | jq .
         
