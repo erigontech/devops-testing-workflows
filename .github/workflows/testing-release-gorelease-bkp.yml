@@ -1,5 +1,5 @@
-name: Release-gr
-run-name: "Testing release workflow with goreleaser WITH CACHE"
+name: Release-gr-bkp
+run-name: "Testing release workflow with goreleaser"
 
 env:
   APPLICATION: "erigon"
@@ -46,10 +46,10 @@ on:
 jobs:
 
   build-release:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     #runs-on: ubuntu-latest-devops-xxlarge
-    timeout-minutes: 60
-    name: Build Release
+    timeout-minutes: 90
+    name: Build Release with Goreleaser
 
     steps:
       - name: Cleanup space
@@ -113,7 +113,6 @@ jobs:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
         run: |
-          mkdir -p local-erigon-go local-erigon-go-cache
           docker run --rm \
             -w /${{ env.APPLICATION }}/ \
             -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
@@ -125,32 +124,17 @@ jobs:
             -e DOCKER_URL=${{ env.DOCKER_URL }} \
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
-            -v ./local-erigon-go:/root/go \
-            -v ./local-erigon-go-cache:/root/.cache \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ${{ env.BUILDER_IMAGE }} release --timeout 60m --clean --skip=validate,announce,publish
+            ${{ env.BUILDER_IMAGE }} release --timeout 90m --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao in the working directory"
           ls -lao
           echo "DEBUG content of the dist/ directory"
           find dist/ -ls
-          echo "-- end --"
-          du -sh local-erigon*
-          find local-erigon-go -ls
-          echo "-- end ---"
-          find local-erigon-go-cache -ls
-
-
-          
-#      - name: Save build cache
-#        uses: actions/cache/save@v4
-#        with:
-#          path: |
-#            ./local-erigon-go-cache
-#          key: ${{ runner.os }}-erigon-go-build-cache
 
             
       - name: Build and push multiplatform docker images (${{ env.BUILD_VERSION }} and latest) in case perform_release is true
-        if: ${{ inputs.perform_release }}
+        #if: ${{ inputs.perform_release }}
+        if: 3 > 4
         env:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
@@ -220,15 +204,6 @@ jobs:
         with:
           name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
           path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
-          retention-days: 1
-          compression-level: 0
-          if-no-files-found: error
-
-      - name: Upload artifact -- windows/amd64
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
-        with:
-          name: ${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
-          path: ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_windows_amd64.zip
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
