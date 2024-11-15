@@ -5,7 +5,7 @@ env:
   APPLICATION: "erigon"
   GOLANG_BUILDER_VERSION: "1.22-bookworm"
   ## BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.21.13"
-  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.22.7"
+  BUILDER_IMAGE: "ghcr.io/goreleaser/goreleaser-cross:v1.23.3"
   TARGET_BASE_VERSION: "alpine:3.20.3"
   APP_REPO: "erigontech/erigon"
   PACKAGE: "github.com/erigontech/erigon"
