@@ -125,7 +125,7 @@ jobs:
             -e TARGET_BASE_VERSION=${{ env.TARGET_BASE_VERSION }} \
             -v $(pwd):/${{ env.APPLICATION}} \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            ${{ env.BUILDER_IMAGE }} release --timeout 90m --clean --skip=validate,announce,publish
+            ${{ env.BUILDER_IMAGE }} release --verbose --timeout 90m --clean --skip=validate,announce,publish
           echo "DEBUG ls -lao in the working directory"
           ls -lao
           echo "DEBUG content of the dist/ directory"
