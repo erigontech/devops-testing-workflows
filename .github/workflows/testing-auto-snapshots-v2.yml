@@ -1,4 +1,4 @@
-name: Publishing snapshot images
+name: Publishing snapshot images v2
 run-name: "Publishing snapshot images "
 
 env:
