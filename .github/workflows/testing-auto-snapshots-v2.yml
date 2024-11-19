@@ -35,6 +35,7 @@ jobs:
     steps:
 
       - name: Define variables
+        id: def_docker_vars
         ## Logic:
         ##   latest image:    erigontech/erigon:${tag_name}${latest_suffix}
         ##   commit id image: erigontech/erigon:${tag_name}-${short_commit_id}
@@ -63,7 +64,6 @@ jobs:
           echo tag_name=${tag_name} >> $GITHUB_OUTPUT
           echo keep_images=${keep_images} >> $GITHUB_OUTPUT
           echo latest_suffix=${latest_suffix} >> $GITHUB_OUTPUT
-
 
       - name: Fast checkout git repository devops-testing-workflows
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
@@ -99,7 +99,9 @@ jobs:
           echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
           cd ..
           echo "DEBUG: printing all env variables:"
-          cat ${GITHUB_OUTPUT}
+          echo "Value of tag_name= ${{ steps.def_docker_vars.outputs.tag_name }}"
+          echo "Value of latest_suffix= ${{ steps.def_docker_vars.outputs.latest_suffix }}"
+          echo "Value of keep_images= ${{ steps.def_docker_vars.outputs.keep_images }}"
 
       - name: Configure go build and pkg cache for one week only
         if: 3 > 4
