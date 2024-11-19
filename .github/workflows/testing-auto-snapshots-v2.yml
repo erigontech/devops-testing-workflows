@@ -44,21 +44,23 @@ jobs:
         run: |
           case '${{ inputs.checkout_ref }}' in
             'main' )
-              set tag_name='main';
-              set keep_images=100;
-              set latest_suffix='-latest'
-              set binaries=''
+              export tag_name='main';
+              export keep_images=100;
+              export latest_suffix='-latest'
+              export binaries=''
               ;;
             'docker_pectra' )
-              set tag_name='docker_pectra';
-              set keep_images=5;
-              set latest_suffix='';
+              export tag_name='docker_pectra';
+              export keep_images=5;
+              export latest_suffix='';
+              export binaries=''
               ;;
             * )
               # use last statement after last '/' 
-              set tag_name=$(echo ${{ inputs.checkout_ref }} | sed -e  's/.*\///g' );
-              set keep_images=0;
-              set latest_suffix='-latest'
+              export tag_name=$(echo ${{ inputs.checkout_ref }} | sed -e  's/.*\///g' );
+              export keep_images=0;
+              export latest_suffix='-latest'
+              export binaries=''
               ;;
           esac
           echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
