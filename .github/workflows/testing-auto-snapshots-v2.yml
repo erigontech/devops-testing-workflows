@@ -80,7 +80,8 @@ jobs:
         with:
           repository: ${{ env.APP_REPO }}
           fetch-depth: 1
-          ref: ${{ inputs.checkout_ref }}
+          # ref: ${{ inputs.checkout_ref }}
+          ref: ${{ inputs.checkout_ref == '' && github.ref || inputs.checkout_ref }}
           path: 'erigon'
 
       - name: Setup go (cache, etc)
