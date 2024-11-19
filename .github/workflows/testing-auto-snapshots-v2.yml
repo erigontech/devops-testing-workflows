@@ -3,13 +3,10 @@ run-name: "Publishing snapshot images "
 
 env:
   APPLICATION: "erigon"
-  #BUILDER_IMAGE: "golang:1.22-bookworm"
-  BUILDER_IMAGE: "golang:1.22-bookworm"
-  #BUILDER_IMAGE: "golang:1.22.7-alpine3.20"
-  #TARGET_BASE_IMAGE: "alpine:3.20.3"
+  BUILDER_IMAGE: "golang:1.23-bookworm"
   TARGET_BASE_IMAGE: "debian:12.7"
   APP_REPO: "erigontech/erigon"
-  CHECKOUT_REF: "main"
+  #CHECKOUT_REF: "main"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
   LABEL_DESCRIPTION: "[docker image built on a last commit id from the main branch] Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
@@ -22,6 +19,12 @@ on:
       #- 'v*.*.*'
       #- 'v*.*.*-*'
   workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: true
+        type: string
+        default: 'main'
+        description: 'The branch to checkout and build artifacts from. By default "main".'
 
 jobs:
 
@@ -30,6 +33,35 @@ jobs:
     timeout-minutes: 60
 
     steps:
+
+      - name: Define variables
+        ## Logic:
+        ##   latest image:    erigontech/erigon:${tag_name}${latest_suffix}
+        ##   commit id image: erigontech/erigon:${tag_name}-${short_commit_id}
+        ##
+        ## 
+        run: |
+          case ${{ inputs.checkout_ref }} in
+            'main' )
+              set tag_name='main';
+              set keep_images=100;
+              set latest_suffix='-latest'
+              set binaries=''
+              ;;
+            'docker_pectra' )
+              set tag_name='docker_pectra';
+              set keep_images=5;
+              set latest_suffix='';
+            * )
+              # use last statement after last '/' 
+              set tag_name=$(echo ${{ inputs.checkout_ref }} | sed -e  's/.*\///g' );
+              set keep_images=0;
+              set latest_suffix='-latest'
+          esac
+          echo tag_name=${tag_name} >> $GITHUB_OUTPUT
+          echo keep_images=${keep_images} >> $GITHUB_OUTPUT
+          echo latest_suffix=${latest_suffix} >> $GITHUB_OUTPUT
+
 
       - name: Fast checkout git repository devops-testing-workflows
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
@@ -43,7 +75,7 @@ jobs:
         with:
           repository: ${{ env.APP_REPO }}
           fetch-depth: 1
-          ref: ${{ env.CHECKOUT_REF }}
+          ref: ${{ inputs.checkout_ref }}
           path: 'erigon'
 
       - name: Setup go (cache, etc)
@@ -64,8 +96,11 @@ jobs:
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
           echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
           cd ..
+          echo "DEBUG: printing all env variables:"
+          set
 
       - name: Configure go build and pkg cache for one week only
+        if: 3 > 4
         id: cache
         uses: actions/cache@v4
         with:
