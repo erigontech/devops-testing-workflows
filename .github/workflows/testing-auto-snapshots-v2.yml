@@ -99,7 +99,7 @@ jobs:
           echo "week_of_the_year=$(/bin/date -u "+%Y-%W")" >> $GITHUB_OUTPUT
           cd ..
           echo "DEBUG: printing all env variables:"
-          set
+          cat ${GITHUB_OUTPUT}
 
       - name: Configure go build and pkg cache for one week only
         if: 3 > 4
