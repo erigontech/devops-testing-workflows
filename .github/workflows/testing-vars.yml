@@ -53,7 +53,7 @@ jobs:
         env:
           DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest',env.DOCKER_URL) || 'nothing' }}
         run: |
-          echo "github.ref= ${{ github.ref }}"
+          echo "github.ref= ${{ github.ref_name }}"
           set
           pwd
           ls -l
