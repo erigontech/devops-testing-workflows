@@ -14,7 +14,7 @@ env:
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     #tags:
       ## only trigger on release tags:
       #- 'v*.*.*'
@@ -53,6 +53,7 @@ jobs:
         env:
           DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest',env.DOCKER_URL) || 'nothing' }}
         run: |
+          echo "github.ref= ${{ github.ref }}"
           set
           pwd
           ls -l
