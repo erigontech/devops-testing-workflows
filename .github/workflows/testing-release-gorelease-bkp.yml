@@ -46,8 +46,8 @@ on:
 jobs:
 
   build-release:
-    #runs-on: ubuntu-latest
-    runs-on: ubuntu-latest-devops-xxlarge
+    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 90
     name: Build Release with Goreleaser
 
