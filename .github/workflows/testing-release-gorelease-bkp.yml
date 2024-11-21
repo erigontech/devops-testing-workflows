@@ -46,8 +46,8 @@ on:
 jobs:
 
   build-release:
-    runs-on: ubuntu-latest
-    #runs-on: ubuntu-latest-devops-xxlarge
+    #runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 90
     name: Build Release with Goreleaser
 
@@ -230,3 +230,16 @@ jobs:
             --title "${{ inputs.release_version }}" \
             --notes "**Improvements:**<br>- ...coming soon <br><br>**Bugfixes:**<br><br>- ...coming soon<br><br>**Docker images:**<br><br>Docker image released:<br> ${{ env.DOCKER_TAGS }}<br><br>... coming soon<br>"
 
+
+  Debian-package:
+    needs: [build-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: Build Debian Package
+
+    steps:
+      - name: Run reusable-build-debian-pkg workflow
+        uses: .github/workflows/reusable-build-debian-pkg.yml@main
+        with:
+          artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          version: ${{ inputs.release_version }}
