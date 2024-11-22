@@ -239,7 +239,7 @@ jobs:
 
     steps:
       - name: Run reusable-build-debian-pkg workflow
-        uses: .github/workflows/reusable-build-debian-pkg.yml@main
+        uses: ./.github/actions/build-debian-pkg
         with:
           artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           version: ${{ inputs.release_version }}
