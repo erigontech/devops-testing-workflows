@@ -168,6 +168,7 @@ jobs:
 
       - name: TMP create artifacts
         run: |
+          mkdir ./dist
           date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
           date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
