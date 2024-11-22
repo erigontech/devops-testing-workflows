@@ -248,7 +248,7 @@ jobs:
     
     steps:
       - name: Run reusable-build-debian-pkg workflow
-        uses: ${{ env.APP_REPO}}/.github/workflows/reusable-build-debian-pkg.yml@main
+        uses: erigontech/erigon/.github/workflows/reusable-build-debian-pkg.yml@main
         with:
           artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           version: ${{ inputs.release_version }}
