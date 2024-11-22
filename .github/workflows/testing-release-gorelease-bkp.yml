@@ -109,6 +109,7 @@ jobs:
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db ## v3.6.1
 
       - name: Build binaries with goreleaser
+        if: 1>2
         env:
           BUILD_VERSION: ${{ inputs.release_version }}
           DOCKER_URL: ${{ env.DOCKERHUB_REPOSITORY_DEV }}
@@ -162,6 +163,14 @@ jobs:
           --label org.opencontainers.image.base.name="debian:${{ env.TARGET_BASE_VERSION }}" \
           --push \
           --platform linux/amd64,linux/amd64/v2,linux/arm64 .
+
+      - name: TMP create artifacts
+        run: |
+          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
+          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
+          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
 
       - name: Upload artifact -- linux/arm64
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
@@ -236,15 +245,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     name: Build Debian Package
-
+    
     steps:
-      - name: Checkout git repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 ## 4.1.7 release
-        with:
-          fetch-depth: 0
-                
       - name: Run reusable-build-debian-pkg workflow
-        uses: ./.github/actions/build-debian-pkg
+        uses: ${{ env.APP_REPO}}/.github/workflows/reusable-build-debian-pkg.yml@main
         with:
           artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           version: ${{ inputs.release_version }}
