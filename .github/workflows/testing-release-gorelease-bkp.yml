@@ -50,6 +50,8 @@ jobs:
     #runs-on: ubuntu-latest-devops-xxlarge
     timeout-minutes: 90
     name: Build Release with Goreleaser
+    outputs:
+      application: ${{ env.APPLICATION }}
 
     steps:
       - name: Cleanup space
@@ -246,5 +248,5 @@ jobs:
     #timeout-minutes: 10
     uses: erigontech/devops-testing-workflows/.github/workflows/reusable-build-debian-pkg.yml@main
     with:
-      artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+      artifact_id: ${{ needs.build-release.outputs.application }}_${{ inputs.release_version }}_linux_amd64.tar.gz
       version: ${{ inputs.release_version }}
