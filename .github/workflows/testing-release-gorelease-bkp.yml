@@ -244,7 +244,7 @@ jobs:
     needs: [build-release]
     #runs-on: ubuntu-latest
     #timeout-minutes: 10
-    uses: erigontech/erigon/.github/workflows/reusable-build-debian-pkg.yml@main
+    uses: erigontech/devops-testing-workflows/.github/workflows/reusable-build-debian-pkg.yml@main
     with:
       artifact_id: ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
       version: ${{ inputs.release_version }}
