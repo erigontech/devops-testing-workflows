@@ -249,5 +249,6 @@ jobs:
     #timeout-minutes: 10
     uses: erigontech/devops-testing-workflows/.github/workflows/reusable-build-debian-pkg.yml@main
     with:
-      artifact_id: ${{ needs.build-release.outputs.application }}_${{ inputs.release_version }}_linux_amd64.tar.gz
+      application: ${{ needs.build-release.outputs.application }}
       version: ${{ inputs.release_version }}
+
