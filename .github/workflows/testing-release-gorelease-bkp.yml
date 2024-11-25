@@ -170,15 +170,15 @@ jobs:
         run: |
           mkdir ./dist
           cd dist
-          wget https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_amd64.tar.gz
-          wget https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_amd64v2.tar.gz
-          wget https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_arm64.tar.gz
+          wget --progress=bar:force:noscroll --show-progress -q https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_amd64.tar.gz
+          wget --progress=bar:force:noscroll --show-progress -q https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_amd64v2.tar.gz
+          wget --progress=bar:force:noscroll --show-progress -q https://github.com/erigontech/erigon/releases/download/v3.0.0-alpha5/erigon_v3.0.0-alpha5_linux_arm64.tar.gz
           mv erigon_v3.0.0-alpha5_linux_amd64.tar.gz ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64.tar.gz
           mv erigon_v3.0.0-alpha5_linux_amd64v2.tar.gz ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_amd64v2.tar.gz
           mv erigon_v3.0.0-alpha5_linux_arm64.tar.gz ${{ env.APPLICATION }}_${{ inputs.release_version }}_linux_arm64.tar.gz
           echo "DEBUG: Linux amd/arm artifacts are now prepared!"
-          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
-          date > ./dist/${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
+          date > ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_arm64.tar.gz
+          date > ${{ env.APPLICATION }}_${{ inputs.release_version }}_darwin_amd64.tar.gz
 
       - name: Upload artifact -- linux/arm64
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
