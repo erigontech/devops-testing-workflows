@@ -53,9 +53,9 @@ jobs:
       # Creating directory structure
       - name: making directory structure
         run: |
-          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_amd64.tar.gz
-          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_amd64v2.tar.gz
-          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_arm64.tar.gz
+          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_amd64.tar.gz
+          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_amd64v2.tar.gz
+          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_arm64.tar.gz
           mkdir -p packaging/deb/erigon/usr/bin
           mkdir -p packaging/deb/erigon/opt/erigon
 
