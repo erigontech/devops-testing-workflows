@@ -27,17 +27,17 @@ jobs:
       - name: Download arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.application }}_${{ inputs.version }}_arm64.tar.gz
+          name: ${{ inputs.application }}_${{ inputs.version }}_linux_arm64.tar.gz
 
       - name: Download amd64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.application }}_${{ inputs.version }}_amd64.tar.gz
+          name: ${{ inputs.application }}_${{ inputs.version }}_linux_amd64.tar.gz
 
       - name: Download amd64v2 artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.application }}_${{ inputs.version }}_amd64v2.tar.gz
+          name: ${{ inputs.application }}_${{ inputs.version }}_linux_amd64v2.tar.gz
   
       - name: Debug 1
         run: |
