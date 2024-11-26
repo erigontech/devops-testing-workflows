@@ -74,7 +74,7 @@ jobs:
           Vcs-Git: https://github.com/erigontech/erigon.git
           Vcs-Browser: https://github.com/erigontech/erigon 
           END
-          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH} \
+          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH}/* \
                       deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin
           dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}
 
@@ -96,7 +96,7 @@ jobs:
           Vcs-Git: https://github.com/erigontech/erigon.git
           Vcs-Browser: https://github.com/erigontech/erigon 
           END
-          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH} \
+          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH}/* \
                       deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin
           dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}
 
