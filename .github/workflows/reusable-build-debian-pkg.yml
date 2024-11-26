@@ -40,8 +40,24 @@ jobs:
           ls -lao
 
       - name: Update and install required packages
-        run: sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y dpkg-dev debhelper
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade -y
+          sudo apt-get install -y dpkg-dev debhelper rclone reprepro
 
+      - name: Configure rclone [skip for now]
+        if: 1>2
+        run: |
+          mkdir -p ~/.config/rclone
+          cat <<-END > ~/.config/rclone/rclone.conf
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${R2_ACCESS_KEY_ID}
+          secret_access_key = ${R2_SECRET_ACCESS_KEY}
+          endpoint = ${R2_ENDPOINT}
+          acl = private
+          END
       - name: clearing dpkg
         run: sudo dpkg --clear-avail
 
@@ -96,101 +112,53 @@ jobs:
           Vcs-Git: https://github.com/erigontech/erigon.git
           Vcs-Browser: https://github.com/erigontech/erigon 
           END
+          echo "debug start"
+          cat deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/DEBIAN/control
+          echo "debug end"
           install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH}/* \
                       deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin
           dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}
 
       - name: debug -- exit
         run: |
-          find . -name *.deb* -ls
+          cd ./deb-pkg
+          sha256sum ${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_amd64.deb.checksum
+          sha256sum ${{ inputs.application }}_${{ inputs.version }}_arm64.deb ${{ inputs.application }}_${{ inputs.version }}_arm64.deb.checksum
+          ls -l *deb *.checksum
           exit 1
 
-
-
-
-
-
-      - name: copy the binary for amd64 over
-        run: cp -rp build/bin/erigon packaging/deb/erigon/usr/bin/
-      - name: create systemd directory for service file
-        run: mkdir -p packaging/deb/erigon/lib/systemd/system
-      - name: copy the erigon service file for systemd
-        run: cp -rp packaging/package_scripts/erigon.service packaging/deb/erigon/lib/systemd/system/
-
-      # Create control file and packaging
-      - name: create control file
-        run: |
-          touch packaging/deb/erigon/DEBIAN/control
-          echo "Package: erigon" >> packaging/deb/erigon/DEBIAN/control
-          echo "Version: ${{ env.VERSION }}" >> packaging/deb/erigon/DEBIAN/control
-          echo "Section: base" >> packaging/deb/erigon/DEBIAN/control
-          echo "Priority: optional" >> packaging/deb/erigon/DEBIAN/control
-          echo "Architecture: amd64" >> packaging/deb/erigon/DEBIAN/control
-          echo "Maintainer: devops@polygon.technology" >> packaging/deb/erigon/DEBIAN/control
-          echo "Description: erigon package" >> packaging/deb/erigon/DEBIAN/control
-      - name: Creating package directory for binary for erigon ${{ env.ARCH }}
-        run: cp -rp packaging/deb/erigon packaging/deb/erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}
-        env:
-          ARCH: amd64
-      - name: Running package build  for ${{ env.ARCH }}
-        run: dpkg-deb --build --root-owner-group packaging/deb/erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}
-        env:
-          ARCH: amd64
-
-      # arm64 setup
-      - name: prepping environment for arm64 build
-        run: make clean
-
-      - name: removing amd64 control file
-        run: rm -rf packaging/deb/erigon/DEBIAN/control
-
-      - name: Adding requirements for cross compile
-        run: sudo apt-get install g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
-
-      - name: build for arm64
-        run: GOARCH=arm64 GOOS=linux CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CGO_ENABLED=1 go build -o build/bin/erigon ./cmd/erigon/main.go
-
-      - name: Copying necessary files
-        run: cp -rp build/bin/erigon packaging/deb/erigon/usr/bin/
-      - name: create control file
-        run: |
-          touch packaging/deb/erigon/DEBIAN/control
-          echo "Package: erigon" >> packaging/deb/erigon/DEBIAN/control
-          echo "Version: ${{ env.VERSION }}" >> packaging/deb/erigon/DEBIAN/control
-          echo "Section: base" >> packaging/deb/erigon/DEBIAN/control
-          echo "Priority: optional" >> packaging/deb/erigon/DEBIAN/control
-          echo "Architecture: arm64" >> packaging/deb/erigon/DEBIAN/control
-          echo "Maintainer: devops@polygon.technology" >> packaging/deb/erigon/DEBIAN/control
-          echo "Description: erigon package" >> packaging/deb/erigon/DEBIAN/control
-      - name: Creating package directory for binary for erigon ${{ env.ARCH }}
-        run: cp -rp packaging/deb/erigon packaging/deb/erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}
-        env:
-          ARCH: arm64
-
-      - name: Running package build for ${{ env.ARCH }}
-        run: dpkg-deb --build --root-owner-group packaging/deb/erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}
-        env:
-          ARCH: arm64
-
-      - name: shasum the ${{ env.ARCH }} debian package
-        run: cd packaging/deb/ && sha256sum erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}.deb > erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}.deb.checksum
-        env:
-          ARCH: amd64
-
-      - name: shasum the ${{ env.ARCH }} debian package
-        run: cd packaging/deb/ && sha256sum erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}.deb > erigon-${{ env.GIT_TAG }}-${{ env.ARCH }}.deb.checksum
-        env:
-          ARCH: arm64
-
-      # Confirm packages built and upload
-      - name: Confirming package built
-        run: ls -ltr packaging/deb/ | grep erigon
-
-      - name: Release erigon Packages
-        uses: softprops/action-gh-release@v1
+      - name: Apload artifact amd64.deb
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
         with:
-          tag_name: ${{ env.GIT_TAG }}
-          prerelease: true
-          files: |
-            packaging/deb/erigon**.deb
-            packaging/deb/erigon**.deb.checksum
+          name: ${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_amd64.deb
+          path: ./deb-pkg/${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_amd64.deb
+          retention-days: 5
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Apload artifact amd64.deb.checksum
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_amd64.deb.checksum
+          path: ./deb-pkg/${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_amd64.deb.checksum
+          retention-days: 5
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Apload artifact arm64.deb
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_arm64.deb
+          path: ./deb-pkg/${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_arm64.deb
+          retention-days: 5
+          compression-level: 0
+          if-no-files-found: error
+  
+      - name: Apload artifact arm64.deb.checksum
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  ## v4.3.6
+        with:
+          name: ${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_arm64.deb.checksum
+          path: ./deb-pkg/${{ inputs.application }}_${{ inputs.version }}_amd64.deb ${{ inputs.application }}_${{ inputs.version }}_arm64.deb.checksum
+          retention-days: 5
+          compression-level: 0
+          if-no-files-found: error
