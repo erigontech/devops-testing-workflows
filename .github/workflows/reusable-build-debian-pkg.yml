@@ -29,11 +29,6 @@ jobs:
         with:
           name: ${{ inputs.application }}_${{ inputs.version }}_linux_arm64.tar.gz
 
-      - name: Download amd64 artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.application }}_${{ inputs.version }}_linux_amd64.tar.gz
-
       - name: Download amd64v2 artifact
         uses: actions/download-artifact@v4
         with:
@@ -50,19 +45,69 @@ jobs:
       - name: clearing dpkg
         run: sudo dpkg --clear-avail
 
-      # Creating directory structure
-      - name: making directory structure
+      - name: Extract archives
         run: |
-          tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_amd64.tar.gz
           tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_amd64v2.tar.gz
+          mv -v ${{ inputs.application }}_${{ inputs.version }}_linux_amd64v2 ${{ inputs.application }}_${{ inputs.version }}_linux_amd64
           tar xzvf ${{ inputs.application }}_${{ inputs.version }}_linux_arm64.tar.gz
-          mkdir -p packaging/deb/erigon/usr/bin
-          mkdir -p packaging/deb/erigon/opt/erigon
 
+      # Creating directory structure
+      # see https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
+      #     https://www.debian.org/doc/manuals/developers-reference/best-pkging-practices.html
+      - name: Build debian package for amd64
+        env:
+          ARCH: "amd64"
+        run: |
+          export PARSED_VERSION=$(echo ${{ inputs.version }} | sed -e 's/^v//g')
+          mkdir -p deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin \
+                   deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/DEBIAN
+          cat <<-END  > deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/DEBIAN/control
+          Package: ${{ inputs.application }}
+          Version: ${PARSED_VERSION}
+          Section: misc
+          Priority: optional
+          Architecture: ${ARCH}
+          Maintainer: Erigon DevOps [https://github.com/erigontech/erigon/issues]
+          Description: Erigon - Ethereum implementation on the efficiency frontier
+          Vcs-Git: https://github.com/erigontech/erigon.git
+          Vcs-Browser: https://github.com/erigontech/erigon 
+          END
+          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH} \
+                      deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin
+          dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}
+
+      - name: Build debian package for arm64
+        env:
+          ARCH: "arm64"
+        run: |
+          export PARSED_VERSION=$(echo ${{ inputs.version }} | sed -e 's/^v//g')
+          mkdir -p deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin \
+                    deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/DEBIAN
+          cat <<-END  > deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/DEBIAN/control
+          Package: ${{ inputs.application }}
+          Version: ${PARSED_VERSION}
+          Section: misc
+          Priority: optional
+          Architecture: ${ARCH}
+          Maintainer: Erigon DevOps [https://github.com/erigontech/erigon/issues]
+          Description: Erigon - Ethereum implementation on the efficiency frontier
+          Vcs-Git: https://github.com/erigontech/erigon.git
+          Vcs-Browser: https://github.com/erigontech/erigon 
+          END
+          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH} \
+                      deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}/usr/bin
+          dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${{ inputs.version }}_${ARCH}
 
       - name: debug -- exit
-        run: exit 1
+        run: |
+          find . -name *.deb* -ls
+          exit 1
 
+
+
+
+
+          
       - name: copy the binary for amd64 over
         run: cp -rp build/bin/erigon packaging/deb/erigon/usr/bin/
       - name: create systemd directory for service file
