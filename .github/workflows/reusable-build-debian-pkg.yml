@@ -119,7 +119,7 @@ jobs:
           echo "debug start"
           cat deb-pkg/${{ inputs.application }}_${PARSED_VERSION}_${ARCH}/DEBIAN/control
           echo "debug end"
-          install -v -p ${{ inputs.application }}_${PARSED_VERSION}_linux_${ARCH}/* \
+          install -v -p ${{ inputs.application }}_${{ inputs.version }}_linux_${ARCH}/* \
                       deb-pkg/${{ inputs.application }}_${PARSED_VERSION}_${ARCH}/usr/bin
           dpkg-deb --build --root-owner-group deb-pkg/${{ inputs.application }}_${PARSED_VERSION}_${ARCH}
 
