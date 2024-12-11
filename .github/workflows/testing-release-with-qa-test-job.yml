@@ -1,4 +1,4 @@
-name: Release 2.60x with testing steps
+name: testing-release-with-qa-test-job
 run-name: test - Release ${{ inputs.release_version }} from branch ${{ inputs.checkout_ref }} executed by @${{ github.actor }}
 
 env:
@@ -8,7 +8,6 @@ env:
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
-  RELEASE_VERSION: "v2.60.102"
   TEST_TRACKING_TIME_SECONDS: 7200 # 2 hours
   TEST_TOTAL_TIME_SECONDS: 18000   # 5 hours
   TEST_CHAIN: "mainnet"
