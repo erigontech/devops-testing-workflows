@@ -3,13 +3,14 @@ run-name: test - Release ${{ inputs.release_version }} from branch ${{ inputs.ch
 
 env:
   APPLICATION: "erigon"
+  APPLICATION_VERSION: "Erigon2"
   BUILDER_IMAGE: "golang:1.22-bookworm"
   TARGET_BASE_IMAGE: "debian:12.7-slim"
   APP_REPO: "erigontech/erigon"
   CHECKOUT_REF: "release/2.60"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
   TEST_TRACKING_TIME_SECONDS: 7200 # 2 hours
-  TEST_TOTAL_TIME_SECONDS: 18000   # 5 hours
+  TEST_TOTAL_TIME_SECONDS: 432000   # 5 days
   TEST_CHAIN: "mainnet"
   LABEL_DESCRIPTION: "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
@@ -165,7 +166,8 @@ jobs:
 
   test-release:
     name: test on ${{ matrix.id }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: [ self-hosted, Release, "${{ matrix.runner-arch }}" ]
+    timeout-minutes: 7200  # 5 days
     needs: [ build-release ]
     strategy:
       matrix:
@@ -173,17 +175,17 @@ jobs:
           - id: linux/amd64
             #runner: ubuntu-latest-release-test-amd64
             #runner: ubuntu-latest-devops-large
-            runner: BMHZ-QA-Test_Runner-Erigon-n5
+            runner-arch: X64
             artifact: linux_amd64
           - id: linux/amd64/v2
             #runner: ubuntu-latest-release-test-amd64
             #runner: ubuntu-latest-devops-large
-            runner: BMHZ-QA-Test_Runner-Erigon-n5
+            runner-arch: X64
             artifact: linux_amd64v2
           - id: linux/arm64
             #runner: ubuntu-latest-release-test-arm64
             #runner: ubuntu-latest-devops-large-arm
-            runner: BMHZ-QA-Test_Runner-Erigon-n6
+            runner-arch: ARM64
             artifact: linux_arm64
                     
 
@@ -231,7 +233,7 @@ jobs:
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
             ${GITHUB_WORKSPACE}/${{ env.APPLICATION }}_${{ inputs.release_version }}_${{ matrix.artifact }} \
-              ${RUNNER_WORKSPACE}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} Erigon2 ${{ env.TEST_CHAIN }}
+              ${RUNNER_WORKSPACE}/erigon-data ${{ env.TEST_TRACKING_TIME_SECONDS }} ${{ env.TEST_TOTAL_TIME_SECONDS }} ${{ env.APPLICATION_VERSION }} ${{ env.TEST_CHAIN }}
           # Capture monitoring script exit status
           test_exit_status=$?
           # Save the subsection reached status
