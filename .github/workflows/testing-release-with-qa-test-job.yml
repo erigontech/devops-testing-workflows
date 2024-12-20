@@ -229,6 +229,7 @@ jobs:
           echo "DEBUG -- content of directory GITHUB_WORKSPACE ${GITHUB_WORKSPACE} :"
           ls -l ${GITHUB_WORKSPACE}
           echo "DEBUG -- end."
+          rm -rf ${RUNNER_WORKSPACE}/erigon-data || true
           mkdir ${RUNNER_WORKSPACE}/erigon-data
           # Run Erigon, wait sync and check ability to maintain sync
           python3 qa-tests/tip-tracking/run_and_check_tip_tracking.py \
