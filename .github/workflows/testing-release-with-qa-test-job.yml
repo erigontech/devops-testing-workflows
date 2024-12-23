@@ -177,16 +177,16 @@ jobs:
             #runner: ubuntu-latest-devops-large
             runner-arch: X64
             artifact: linux_amd64
-          - id: linux/amd64/v2
-            #runner: ubuntu-latest-release-test-amd64
-            #runner: ubuntu-latest-devops-large
-            runner-arch: X64
-            artifact: linux_amd64v2
-          #- id: linux/arm64
-          #  #runner: ubuntu-latest-release-test-arm64
-          #  #runner: ubuntu-latest-devops-large-arm
-          #  runner-arch: ARM64
-          #  artifact: linux_arm64
+          #- id: linux/amd64/v2
+          #  #runner: ubuntu-latest-release-test-amd64
+          #  #runner: ubuntu-latest-devops-large
+          #  runner-arch: X64
+          #  artifact: linux_amd64v2
+          - id: linux/arm64
+            #runner: ubuntu-latest-release-test-arm64
+            #runner: ubuntu-latest-devops-large-arm
+            runner-arch: ARM64
+            artifact: linux_arm64
                     
 
     steps:
