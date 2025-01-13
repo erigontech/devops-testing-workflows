@@ -3,11 +3,11 @@ run-name: test - Release ${{ inputs.release_version }} from branch ${{ inputs.ch
 
 env:
   APPLICATION: "erigon"
-  APPLICATION_VERSION: "Erigon2"
+  APPLICATION_VERSION: "Erigon3"
   BUILDER_IMAGE: "golang:1.22-bookworm"
-  TARGET_BASE_IMAGE: "debian:12.7-slim"
+  TARGET_BASE_IMAGE: "debian:12.8-slim"
   APP_REPO: "erigontech/erigon"
-  CHECKOUT_REF: "release/2.60"
+  CHECKOUT_REF: "main"
   DOCKERHUB_REPOSITORY: "erigontech/dev-erigon"
   TEST_TRACKING_TIME_SECONDS: 7200 # 2 hours
   TEST_TOTAL_TIME_SECONDS: 432000   # 5 days
@@ -103,7 +103,7 @@ jobs:
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/bash \
           ${{ env.BUILDER_IMAGE }} \
-          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v1 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
+          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v1 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
 
       - name: build amd64v2
         run: |
@@ -114,7 +114,7 @@ jobs:
           -v ${HOME}/go/pkg/mod:/go/pkg/mod \
           -w /erigon --entrypoint /bin/bash \
           ${{ env.BUILDER_IMAGE }} \
-          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
+          -c "git config --global --add safe.directory /erigon; make GOARCH=amd64 GOAMD64=v2 GOBIN=/erigon-build BUILD_TAGS=nosqlite,noboltdb,nosilkworm erigon downloader devnet evm caplin diag integration rpcdaemon sentry txpool; find / -name libsilkworm_capi.so -exec install {} /erigon-build \; "
 
       - name: Pack Artifacts
         run: |
