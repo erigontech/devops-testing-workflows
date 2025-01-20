@@ -111,7 +111,7 @@ jobs:
 
       - name: Build for linux/arm64
         run: >
-          docker run --platform linux/arm64
+          podman run --platform linux/arm64
           --rm
           -v $(pwd)/erigon:/erigon:ro
           -v ${GITHUB_WORKSPACE}/build-arm64:/erigon-build
@@ -126,7 +126,7 @@ jobs:
         ## temporary disable silkworm in 3.x.x
       - name: Build for linux/amd64 (with nosilkworm tag)
         run: >
-          docker run --platform linux/amd64
+          podman run --platform linux/amd64
           --rm
           -v $(pwd)/erigon:/erigon:ro
           -v ${GITHUB_WORKSPACE}/build-amd64:/erigon-build
@@ -142,7 +142,7 @@ jobs:
         ## temporary disable silkworm in 3.x.x
       - name: Build for linux/amd64/v2 (with nosilkworm tag)
         run: >
-          docker run --platform linux/amd64/v2
+          podman run --platform linux/amd64/v2
           --rm
           -v $(pwd)/erigon:/erigon:ro
           -v ${GITHUB_WORKSPACE}/build-amd64v2:/erigon-build
