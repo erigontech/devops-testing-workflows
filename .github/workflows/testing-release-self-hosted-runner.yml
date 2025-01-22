@@ -84,6 +84,9 @@ jobs:
         run: |
           mkdir $GITHUB_WORKSPACE/build-arm64 $GITHUB_WORKSPACE/build-amd64 $GITHUB_WORKSPACE/build-amd64v2
           cd erigon;
+          echo DEBUG111
+          id
+          echo END DEBUG
           echo "id=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "short_commit_id=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
           echo "parsed_version=$(echo ${{ inputs.release_version }} | sed -e 's/^v//g')" >> $GITHUB_OUTPUT
