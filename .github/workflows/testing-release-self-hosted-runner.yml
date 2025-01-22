@@ -119,7 +119,7 @@ jobs:
       - name: Build for linux/arm64
         #if: 3 > 5
         run: >
-          docker rmi ${{ env.BUILDER_IMAGE }} || true
+          docker rmi ${{ env.BUILDER_IMAGE }} || true ;
           docker run --platform linux/arm64
           --rm
           -v $(pwd)/erigon:/erigon:ro
