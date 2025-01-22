@@ -114,6 +114,7 @@ jobs:
             ~/.cache
 
       - name: Build for linux/arm64
+        if: 3 > 5
         run: >
           docker run --platform linux/arm64
           --rm
