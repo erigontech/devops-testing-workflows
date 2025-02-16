@@ -1,5 +1,5 @@
 name: testing-vars
-run-name: "testing-vars"
+run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
 
 env:
   APPLICATION: "erigon"
@@ -20,6 +20,12 @@ on:
       #- 'v*.*.*'
       #- 'v*.*.*-*'
   workflow_dispatch:
+    inputs:
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip tests during release build'
 
 jobs:
 
