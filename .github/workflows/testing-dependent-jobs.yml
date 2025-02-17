@@ -2,13 +2,6 @@ name: testing-dependent-jobs
 run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
 
 on:
-  push:
-    branches:
-      - 'main'
-    #tags:
-      ## only trigger on release tags:
-      #- 'v*.*.*'
-      #- 'v*.*.*-*'
   workflow_dispatch:
     inputs:
       skip_tests:
