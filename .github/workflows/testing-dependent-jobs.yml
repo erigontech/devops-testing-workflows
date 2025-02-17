@@ -1,0 +1,64 @@
+name: testing-dependent-jobs
+run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
+
+on:
+  push:
+    branches:
+      - 'main'
+    #tags:
+      ## only trigger on release tags:
+      #- 'v*.*.*'
+      #- 'v*.*.*-*'
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip tests during release build'
+
+jobs:
+
+  job-01:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: step1
+        run: echo this is step1
+
+
+  job-2-01:
+    name: Job-2-01 - could be skipped
+    if: ${{ inputs.skip_tests == 'false' }}
+    runs-on: ubuntu-22.04
+    needs: [ job-01 ]
+    timeout-minutes: 30
+
+    steps:
+      - name: step2-01
+        run: echo this is step2-01
+
+
+  job-2-02:
+    name: Job-2-02 - could be skipped
+    if: ${{ inputs.skip_tests == 'false' }}
+    runs-on: ubuntu-22.04
+    needs: [ job-01 ]
+    timeout-minutes: 30
+
+    steps:
+      - name: step2-02
+        run: echo this is step2-02
+
+
+  job-3-01:
+    name: Job-3-01 - debug outputs
+    runs-on: ubuntu-22.04
+    needs: [ job-2-01, job-2-02 ]
+    if: always()
+
+    steps:
+      - name: Print debug outputs
+        run: |
+          echo job-2-01 result: ${{ needs.job-2-01.result }} , job-2-02 result: ${{ needs.job-2-02.result }}
