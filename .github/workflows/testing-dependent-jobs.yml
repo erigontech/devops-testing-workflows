@@ -1,5 +1,5 @@
 name: testing-dependent-jobs
-run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
+run-name: Testing dependent jobs, input parameter skip_tests=${{ inputs.skip_tests }}
 
 on:
   workflow_dispatch:
@@ -43,6 +43,9 @@ jobs:
     steps:
       - name: step2-02
         run: echo this is step2-02
+
+      - name: Testing failure
+        run: exit 1
 
 
   job-3-01:
