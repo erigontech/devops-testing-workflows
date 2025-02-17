@@ -23,7 +23,7 @@ jobs:
 
   job-2-01:
     name: Job-2-01 - could be skipped
-    if: ! ${{ inputs.skip_tests }}
+    if: ${{ ! inputs.skip_tests }}
     runs-on: ubuntu-22.04
     needs: [ job-01 ]
     timeout-minutes: 30
@@ -35,7 +35,7 @@ jobs:
 
   job-2-02:
     name: Job-2-02 - could be skipped
-    if: ! ${{ inputs.skip_tests }}
+    if: ! ${{ ! inputs.skip_tests }}
     runs-on: ubuntu-22.04
     needs: [ job-01 ]
     timeout-minutes: 30
