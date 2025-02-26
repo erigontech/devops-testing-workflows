@@ -52,7 +52,7 @@ jobs:
     name: Job-3-01 - debug outputs
     runs-on: ubuntu-22.04
     needs: [ job-2-01, job-2-02 ]
-    if: always()
+    if: always() && !contains(needs.job-2-01.result, 'success')
 
     steps:
       - name: Print debug outputs
