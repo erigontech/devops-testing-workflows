@@ -1,4 +1,4 @@
-name: Release
+name: Release (test self-hosted runner)
 run-name: Build release ${{ inputs.release_version}} from branch ${{ inputs.checkout_ref }} by @${{ github.actor }}
 
 env:
