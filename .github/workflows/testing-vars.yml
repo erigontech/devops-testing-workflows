@@ -1,5 +1,5 @@
 name: testing-vars
-run-name: "testing-vars"
+run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
 
 env:
   APPLICATION: "erigon"
@@ -12,30 +12,33 @@ env:
   LABEL_DESCRIPTION: "[docker image built on a last commit id from the main branch] Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier. Archive Node by default."
 
 on:
-  push:
-    branches:
-      - 'master'
+#  push:
+#    branches:
+#      - 'main'
     #tags:
       ## only trigger on release tags:
       #- 'v*.*.*'
       #- 'v*.*.*-*'
   workflow_dispatch:
+    inputs:
+      skip_tests:
+        required: false
+        type: boolean
+        default: false
+        description: 'Skip tests during release build'
 
 jobs:
 
   Build:
     runs-on: ubuntu-22.04
+    #runs-on: [self-hosted, linux, x64, poing-animals]
     timeout-minutes: 30
 
     steps:
-
-
-
-      - name: Debug current directory
-        env:
-          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest',env.DOCKER_URL) || 'nothing' }}
+      - name: Debug env variables - release/3.4.5 branch
         run: |
-          set
-          pwd
-          ls -l
-          ls -lao ..
+          export
+
+
+  Run-Reusable-Wf:
+    uses: erigontech/devops-testing-workflows/.github/workflows/reusable-test.yml@${{ GITHUB_REF_NAME }}
