@@ -30,38 +30,13 @@ on:
 jobs:
 
   Build:
-    #runs-on: ubuntu-22.04
-    runs-on: [self-hosted, linux, x64, poing-animals]
+    runs-on: ubuntu-22.04
+    #runs-on: [self-hosted, linux, x64, poing-animals]
     timeout-minutes: 30
 
     steps:
-      - name: Check Dockerhub
+      - name: Debug env variables
         run: |
-          curl_cmd="curl -s -H \"Authorization: JWT ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}\" "
-          url1='https://hub.docker.com/v2/namespaces/erigontech/repositories/erigon'
-          max_pages=100
-          my_list () {
-            next_page="$url1/tags?page=1&page_size=100"
-            while [ "$next_page" != "null" ]
-              do
-              # Print tags and push dates for tags matching "main-":
-              $curl_cmd $next_page | jq -r '.results|.[]|.name + " " + .tag_last_pushed' | grep 'main-'
-              next_page=`$curl_cmd $next_page | jq '.next' | sed -e 's/^\"//' -e 's/\"$//'`
-            done
-            }
+          export
 
-            my_list | tail -n+$max_pages | while read line; do
-              echo -n "Removing docker image: $line "
-              echo -n "sh cli remove $(echo $line | sed -e 's/^\(main-.\{7\}\) .*/\1/' ) ."
-              echo "... Done."
-            done
 
-      - name: Debug current directory
-        env:
-          DOCKER_PUBLISH_LATEST_CONDITION: ${{ 'true' == 'true' && format('--tag {0}:latest',env.DOCKER_URL) || 'nothing' }}
-        run: |
-          echo "github.ref= ${{ github.ref_name }}"
-          set
-          pwd
-          ls -l
-          ls -lao ..
