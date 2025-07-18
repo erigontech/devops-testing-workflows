@@ -1,0 +1,24 @@
+name: Reusable test
+
+on:
+  workflow_call:
+    inputs:
+      application:
+        required: false
+        type: string
+        default: 'erigon'
+      version:
+        required: false
+        default: '3.0.0'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Debug output
+        run: |
+          echo "DEBUG -- this is main branch"
+          export
