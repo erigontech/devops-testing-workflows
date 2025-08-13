@@ -15,8 +15,10 @@ jobs:
         include:
         - runner: ubuntu-24.04-arm
           arch: arm64
+          docker-tag: arm64
         - runner: ubuntu-24.04
           arch: amd64/v2
+          docker-tag: amd64-v2
 
     steps:
     - name: Checkout
@@ -38,6 +40,6 @@ jobs:
             --attest type=provenance,mode=max \
             --push --platform linux/${{ matrix.arch }} \
             --progress plain \
-            -t erigontech/dev-erigon:test-oleksandr-${{ matrix.arch }} -f Dockerfile-mp .
+            -t erigontech/dev-erigon:test-oleksandr-${{ matrix.docker-tag }} -f Dockerfile-mp .
 
       
