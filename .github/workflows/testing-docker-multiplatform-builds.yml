@@ -9,7 +9,8 @@ on:
 
 jobs:
 
-  build-archs:
+  Build-archs:
+    name: "Build on ${{ matrix.arch }}"
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     strategy:
@@ -47,8 +48,8 @@ jobs:
             -t ${{ env.DOCKER_URL }}-${{ matrix.docker-tag }} -f Dockerfile-mp .
 
       
-  build-final-image:
-    needs: [ build-archs ]
+  Build-final-image:
+    needs: [ Build-archs ]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
