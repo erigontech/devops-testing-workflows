@@ -41,6 +41,7 @@ jobs:
       run: |
         docker buildx build \
             --sbom=true \
+            --provenance false \
             --push --platform linux/${{ matrix.arch }} \
             --progress plain \
             -t ${{ env.DOCKER_URL }}-${{ matrix.docker-tag }} -f Dockerfile-mp .
