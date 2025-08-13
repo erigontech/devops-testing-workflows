@@ -40,7 +40,6 @@ jobs:
     ###             --attest type=provenance,mode=max \
       run: |
         docker buildx build \
-            --sbom=true \
             --provenance false \
             --push --platform linux/${{ matrix.arch }} \
             --progress plain \
