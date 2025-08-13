@@ -30,15 +30,13 @@ on:
 jobs:
 
   Build:
-    runs-on: ubuntu-22.04
-    #runs-on: [self-hosted, linux, x64, poing-animals]
-    timeout-minutes: 30
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04-arm, ubuntu-24.04]
 
     steps:
-      - name: Debug env variables - main branch
+      - name: Debug output
         run: |
-          export
-
-
-  Run-Reusable-Wf:
-    uses: erigontech/devops-testing-workflows/.github/workflows/reusable-test.yml@${{ GITHUB_REF_NAME }}
+          uname -p
