@@ -11,10 +11,12 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
+        runner: [ ubuntu-24.04-arm, ubuntu-24.04 ]
+        include:
         - runner: ubuntu-24.04-arm
           arch: arm64
         - runner: ubuntu-24.04
-          arch: amd64
+          arch: amd64/v2
 
     steps:
     - name: Checkout
