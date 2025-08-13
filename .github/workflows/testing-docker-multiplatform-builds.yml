@@ -37,10 +37,10 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Build docker image for ${{ matrix.arch }}
+    ###             --attest type=provenance,mode=max \
       run: |
         docker buildx build \
             --sbom=true \
-            --attest type=provenance,mode=max \
             --push --platform linux/${{ matrix.arch }} \
             --progress plain \
             -t ${{ env.DOCKER_URL }}-${{ matrix.docker-tag }} -f Dockerfile-mp .
