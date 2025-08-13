@@ -1,0 +1,4 @@
+## Multiplatform dockerfile
+
+FROM debian:12-slim
+RUN echo "TARGETARCH=${TARGETARCH}" > /INFO.txt
