@@ -37,7 +37,9 @@ jobs:
         runner: [ubuntu-24.04-arm, ubuntu-24.04]
 
     steps:
-      - name: "Debug output - ${{ inputs.skip_tests == 'false' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}"
+      - name: Debug output
+        env: 
+          LOCAL_DEBUG1: ${{ inputs.skip_tests == 'false' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}
         run: |
           echo "Running on ARCH=$(uname -p)"
           echo
