@@ -1,5 +1,8 @@
 name: testing-vars
-run-name: Testing variables workflow. The value of skip_tests=${{ inputs.skip_tests }}
+run-name: |
+  Testing variables workflow. 
+  The value of 
+  skip_tests=${{ inputs.skip_tests }}
 
 env:
   APPLICATION: "erigon"
