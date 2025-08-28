@@ -53,7 +53,8 @@ jobs:
         run: |
           echo "Find dockerconf"
           pwd
-          find . -name *.docker* -ls
+          echo "pwd=$(pwd). HOME=${HOME}"
+          find ${HOME} -name *.docker* -ls
           echo "Debug -- end find ---"
           echo "Running on ARCH=$(uname -p)"
           echo
