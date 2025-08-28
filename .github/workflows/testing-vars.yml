@@ -40,10 +40,20 @@ jobs:
         runner: [ubuntu-24.04-arm, ubuntu-24.04]
 
     steps:
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
+        with:
+          username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
+          password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
+
       - name: Debug output
         env: 
           LOCAL_DEBUG1: ${{ github.ref_name == 'main' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}
         run: |
+          echo "Find dockerconf"
+          find / -name *.docker* -ls
+          echo "Debug -- end find ---"
           echo "Running on ARCH=$(uname -p)"
           echo
           echo "Env variables:"
