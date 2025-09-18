@@ -23,5 +23,8 @@ jobs:
           echo "DEBUG -- this is main branch"
           export
 
+      - name: checkout
+        uses: actions/checkout@v4
+
       - name: Test reusable
-        uses: .github/workflows/actions/testing-reusable.yml
+        uses: ./.github/workflows/actions/testing-reusable.yml
