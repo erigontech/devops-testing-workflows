@@ -32,7 +32,12 @@ on:
 
 jobs:
 
+  testing-reusable:
+    name: Reusable Test
+    uses: ./.github/workflows/testing-reusable.yml
+
   Build:
+    needs: [ testing-reusable ]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 5
     strategy:
@@ -41,17 +46,6 @@ jobs:
         runner: [ ubuntu-24.04]
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: debug
-        run: |
-          pwd
-          find . -ls
-
-      - name: Test reusable in main branch
-        uses: ./.github/workflows/testing-reusable.yml
-
       - name: Login to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
         with:
