@@ -22,3 +22,6 @@ jobs:
         run: |
           echo "DEBUG -- this is main branch"
           export
+
+      - name: Test reusable
+        uses: .github/workflows/actions/testing-reusable.yml

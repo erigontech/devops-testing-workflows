@@ -1,0 +1,16 @@
+name: testing-reusbale -- main branch
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Debug step -- branch main.
+        run: echo "Branch main"
