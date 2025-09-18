@@ -41,6 +41,8 @@ jobs:
         runner: [ ubuntu-24.04]
 
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
 
       - name: Test reusable
         uses: ./.github/actions/testing-reusable.yml
