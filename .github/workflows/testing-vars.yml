@@ -44,6 +44,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: debug
+        run: |
+          pwd
+          find . -ls
+
       - name: Test reusable
         uses: ./.github/actions/testing-reusable.yml
 
