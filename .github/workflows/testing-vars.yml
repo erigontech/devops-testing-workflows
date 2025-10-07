@@ -54,6 +54,30 @@ jobs:
           username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
           password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
 
+
+      - name: Test dockerhub overview update
+        run: |
+          JSON_PAYLOAD=$(jq -n --rawfile content README.md '{ "full_description": $content }')
+          AUTH_RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "identifier": "'"${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}"'",
+                  "secret": "'"${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}"'"
+                }' \
+            https://hub.docker.com/v2/auth/token/)
+
+          # Extract the JWT (The token is stored in the 'token' field of the JSON response)
+          DOCKER_JWT=$(echo "${AUTH_RESPONSE}" | jq -r .access_token)
+
+          API_URL="https://hub.docker.com/v2/repositories/erigontech/dev-erigon/"
+          RESULT=$(curl -s -X PATCH \
+            -H "Authorization: Bearer ${DOCKER_JWT}" \
+            -H "Content-Type: application/json" \
+            -d "${JSON_PAYLOAD}" \
+            "${API_URL}")
+
+          echo "Results:\n$(echo $RESULT | jq .)"
+
       - name: Debug output
         env: 
           LOCAL_DEBUG1: ${{ github.ref_name == 'main' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}
