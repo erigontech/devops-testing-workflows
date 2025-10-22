@@ -83,6 +83,12 @@ jobs:
 
           echo "Results:\n$(echo $RESULT | jq .)"
 
+      - name: Conditional step - testing
+        if: |
+          github.repository == 'erigontech/devops-testing-workflows' && 
+          (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork)
+        run: echo condition github.event_name="${github.event_name}" and github.event.pull_request.head.repo=${github.event.pull_request.head.repo}
+
       - name: Debug output
         env: 
           LOCAL_DEBUG1: ${{ github.ref_name == 'main' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}
