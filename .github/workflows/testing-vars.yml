@@ -46,11 +46,14 @@ jobs:
     strategy:
       matrix:
         #runner: [ubuntu-24.04-arm, ubuntu-24.04]
-        runner: [ ubuntu-24.04]
+        runner: [ ubuntu-latest ]
 
     steps:
       - name: Login to Docker Hub
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  ## v3.3.0
+        if: |
+          github.repository == 'erigontech/devops-testing-workflows' && 
+          (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork)      
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_USERNAME }}
           password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
@@ -83,12 +86,6 @@ jobs:
             "${API_URL}")
 
           echo "Results:\n$(echo $RESULT | jq .)"
-
-      - name: Conditional step - testing
-        if: |
-          github.repository == 'erigontech/devops-testing-workflows' && 
-          (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork)
-        run: echo condition github.event_name="${github.event_name}" and github.event.pull_request.head.repo=${github.event.pull_request.head.repo}
 
       - name: Debug output
         env: 
