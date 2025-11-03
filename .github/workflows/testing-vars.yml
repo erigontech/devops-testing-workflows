@@ -92,6 +92,7 @@ jobs:
           LOCAL_DEBUG1: ${{ github.ref_name == 'main' && format('{0}{1}{2}', 'Input variable skip_tests ', ' set to value ', inputs.skip_tests) || inputs.skip_tests }}
           TEST_VARIABLE: "This is test string for application ${{ env.APPLICATION }} ."
         run: |
+          du -sh /opt/* /usr/share/* /usr/local/*
           echo "Comment from fork"
           echo "Find dockerconf"
           pwd
