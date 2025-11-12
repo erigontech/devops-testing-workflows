@@ -59,7 +59,7 @@ jobs:
           password: ${{ secrets.ORG_DOCKERHUB_ERIGONTECH_TOKEN }}
 
       - name: Checkout git repository
-        if: ${{ github.ref == 'refs/heads/main' || github.ref matches '^refs/heads/release/[0-9]+(\\.[0-9]+)*$' }}
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
