@@ -23,7 +23,7 @@ jobs:
           disk-root: "C:"
 
       - name: Enable long paths
-        run: git config --system core.longpaths true
+        run: git config --global core.longpaths true
 
       - name: "Checkout code with submodules and large files (lfs) on ${{ matrix.os }}"
         uses: actions/checkout@v6
